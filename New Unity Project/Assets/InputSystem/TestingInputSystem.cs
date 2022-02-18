@@ -127,7 +127,7 @@ public class TestingInputSystem : MonoBehaviour
         // origin = slightly above the characters feet to ensure we cast above whatever surface the player is on
         // direction = down (4Head)
         Ray ray = new Ray(this.transform.position + Vector3.up * 0.25F, Vector3.down);
-        if (Physics.Raycast(ray, out RaycastHit hit, 1.5f))
+        if (Physics.Raycast(ray, out RaycastHit hit, 0.5f))
         {
             Debug.Log("IS GROUNDED!");
             return true;
