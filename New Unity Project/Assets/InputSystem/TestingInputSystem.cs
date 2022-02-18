@@ -50,9 +50,9 @@ public class TestingInputSystem : MonoBehaviour
     private void FixedUpdate()
     {
         
+        //This piece of code moves thes character relative to the camera
         forceDirection += moveAction.ReadValue<Vector2>().x * GetCameraRight(playerCamera) * moveForce;
         forceDirection += moveAction.ReadValue<Vector2>().y * GetCameraForward(playerCamera) * moveForce;
-
         capsuleRB.AddForce(forceDirection, ForceMode.Impulse);
         forceDirection = Vector3.zero;
 
