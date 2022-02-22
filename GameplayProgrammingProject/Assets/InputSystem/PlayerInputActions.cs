@@ -48,6 +48,17 @@ public class @PlayerInputActions : IInputActionCollection, IDisposable
                     ""isPartOfComposite"": false
                 },
                 {
+                    ""name"": """",
+                    ""id"": ""9169800e-ef06-4ebf-8fa8-e3d76b5bbdbe"",
+                    ""path"": ""<Keyboard>/space"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Jump"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
                     ""name"": ""2D Vector"",
                     ""id"": ""c2af196c-dcdc-4fbf-8db8-217286e52dd6"",
                     ""path"": ""2DVector"",
@@ -61,7 +72,7 @@ public class @PlayerInputActions : IInputActionCollection, IDisposable
                 {
                     ""name"": ""up"",
                     ""id"": ""224db84a-fbd3-4e15-b8c1-b2cbb6d5dc06"",
-                    ""path"": ""<Gamepad>/leftStick/up"",
+                    ""path"": ""<Keyboard>/w"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": ""Keyboard"",
@@ -72,7 +83,7 @@ public class @PlayerInputActions : IInputActionCollection, IDisposable
                 {
                     ""name"": ""down"",
                     ""id"": ""c545e306-4bd7-450a-a80e-60e725a3d52e"",
-                    ""path"": ""<Gamepad>/leftStick/down"",
+                    ""path"": ""<Keyboard>/s"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": ""Keyboard"",
@@ -83,7 +94,7 @@ public class @PlayerInputActions : IInputActionCollection, IDisposable
                 {
                     ""name"": ""left"",
                     ""id"": ""1aa6c79e-b995-46cf-be7c-70846cd82799"",
-                    ""path"": ""<Gamepad>/leftStick/left"",
+                    ""path"": ""<Keyboard>/a"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": ""Keyboard"",
@@ -94,7 +105,7 @@ public class @PlayerInputActions : IInputActionCollection, IDisposable
                 {
                     ""name"": ""right"",
                     ""id"": ""4740f7d4-088a-4c30-8fb2-c7e882c7b738"",
-                    ""path"": ""<Gamepad>/leftStick/right"",
+                    ""path"": ""<Keyboard>/d"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": ""Keyboard"",
