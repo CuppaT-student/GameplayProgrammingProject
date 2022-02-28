@@ -380,7 +380,7 @@ MonoBehaviour:
     ModeOverride: 0
     LensShift: {x: 0, y: 0}
     GateFit: 2
-    m_SensorSize: {x: 1.4804505, y: 1}
+    m_SensorSize: {x: 1.278443, y: 1}
   m_Transitions:
     m_BlendHint: 0
     m_InheritPosition: 0
@@ -695,6 +695,18 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 80
   m_CollisionDetection: 0
+--- !u!114 &1330884899
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1330884896}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 28dad1209d2b19147b295c081efd588f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!4 &1330884900 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 532e96ec12493fa4b84bf541bab6bfec, type: 3}
@@ -770,6 +782,14 @@ PrefabInstance:
     - target: {fileID: 919132149155446097, guid: 532e96ec12493fa4b84bf541bab6bfec, type: 3}
       propertyPath: m_Name
       value: Terence 3D v3-0 autorigged unity export
+      objectReference: {fileID: 0}
+    - target: {fileID: 5866666021909216657, guid: 532e96ec12493fa4b84bf541bab6bfec, type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 9100000, guid: 64c1eaa272b2ae54ba3f8cbead4971cd, type: 2}
+    - target: {fileID: 5866666021909216657, guid: 532e96ec12493fa4b84bf541bab6bfec, type: 3}
+      propertyPath: m_ApplyRootMotion
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 532e96ec12493fa4b84bf541bab6bfec, type: 3}

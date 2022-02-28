@@ -58,7 +58,7 @@ public class TestingInputSystem : MonoBehaviour
 
         // create gravity accerlation 
         if (capsuleRB.velocity.y < 0f)
-            capsuleRB.velocity -= Vector3.down * Physics.gravity.y * Time.fixedDeltaTime;
+            capsuleRB.velocity -= Physics.gravity.y * Time.fixedDeltaTime * Vector3.down;
 
         // create a cap for the players speed but on the horizontal plane (so gravity still increases)
         Vector3 horizontalVelocity = capsuleRB.velocity;

@@ -31,7 +31,7 @@ public class @PlayerInputActions : IInputActionCollection, IDisposable
                     ""type"": ""Value"",
                     ""id"": ""61c8c34c-271c-4dc3-8a42-510b7aaaba48"",
                     ""expectedControlType"": ""Vector2"",
-                    ""processors"": ""StickDeadzone,NormalizeVector2"",
+                    ""processors"": """",
                     ""interactions"": """"
                 }
             ],
@@ -49,11 +49,11 @@ public class @PlayerInputActions : IInputActionCollection, IDisposable
                 },
                 {
                     ""name"": """",
-                    ""id"": ""9169800e-ef06-4ebf-8fa8-e3d76b5bbdbe"",
+                    ""id"": ""08226680-90a7-44fb-b11d-fe5b714aa6df"",
                     ""path"": ""<Keyboard>/space"",
                     ""interactions"": """",
                     ""processors"": """",
-                    ""groups"": """",
+                    ""groups"": ""Keyboard"",
                     ""action"": ""Jump"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
@@ -118,7 +118,7 @@ public class @PlayerInputActions : IInputActionCollection, IDisposable
                     ""id"": ""2af4d650-5285-4a99-9306-b4ce145a095b"",
                     ""path"": ""<Gamepad>/leftStick"",
                     ""interactions"": """",
-                    ""processors"": """",
+                    ""processors"": ""NormalizeVector2,StickDeadzone"",
                     ""groups"": ""Gamepad"",
                     ""action"": ""Movement"",
                     ""isComposite"": false,
