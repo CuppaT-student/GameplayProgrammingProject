@@ -178,7 +178,7 @@ public class @PlayerInputActions : IInputActionCollection, IDisposable
                     ""id"": ""a2b022e0-60bb-4088-baf7-09dac18b78e8"",
                     ""path"": ""<Mouse>/delta"",
                     ""interactions"": """",
-                    ""processors"": """",
+                    ""processors"": ""InvertVector2"",
                     ""groups"": ""Keyboard"",
                     ""action"": ""Look"",
                     ""isComposite"": false,
