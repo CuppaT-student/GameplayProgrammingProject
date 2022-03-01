@@ -19,6 +19,7 @@ public class TestingInputSystem : MonoBehaviour
     [SerializeField] private float jumpForce = 10;
     private Vector3 forceDirection = Vector3.zero;
     [SerializeField] Camera playerCamera;
+    private Animator animator;
 
 
     
@@ -28,6 +29,9 @@ public class TestingInputSystem : MonoBehaviour
         capsuleRB = this.GetComponent<Rigidbody>();
 
         playerInputActions = new PlayerInputActions();
+
+        animator = this.GetComponent<Animator>();
+        
         /* old tutorial code
         playerInputActions.ThirdPersonPlayer.Enable();
         playerInputActions.ThirdPersonPlayer.Jump.performed += Jump;
@@ -38,12 +42,17 @@ public class TestingInputSystem : MonoBehaviour
     private void OnEnable()
     {
         playerInputActions.ThirdPersonPlayer.Jump.started += DoJump;
+        playerInputActions.ThirdPersonPlayer.Attack.started += DoAttack;
         moveAction = playerInputActions.ThirdPersonPlayer.Movement;
         playerInputActions.ThirdPersonPlayer.Enable();
     }
+
+
+
     private void onDisable()
     {
         playerInputActions.ThirdPersonPlayer.Jump.started -= DoJump;
+        playerInputActions.ThirdPersonPlayer.Attack.started -= DoAttack;
         playerInputActions.ThirdPersonPlayer.Disable();
     }
 
@@ -53,6 +62,7 @@ public class TestingInputSystem : MonoBehaviour
         //This piece of code moves thes character relative to the camera
         forceDirection += moveAction.ReadValue<Vector2>().x * GetCameraRight(playerCamera) * moveForce;
         forceDirection += moveAction.ReadValue<Vector2>().y * GetCameraForward(playerCamera) * moveForce;
+//        capsuleRB.velocity = forceDirection * 2.5f;
         capsuleRB.AddForce(forceDirection, ForceMode.Impulse);
         forceDirection = Vector3.zero;
 
@@ -127,6 +137,9 @@ public class TestingInputSystem : MonoBehaviour
         // origin = slightly above the characters feet to ensure we cast above whatever surface the player is on
         // direction = down (4Head)
         Ray ray = new Ray(this.transform.position + Vector3.up * 0.25F, Vector3.down);
+
+        Debug.DrawLine(ray.origin, ray.origin + Vector3.down * 1.1f, Color.red, 2f);
+
         if (Physics.Raycast(ray, out RaycastHit hit, 0.5f))
         {
             Debug.Log("IS GROUNDED!");
@@ -158,5 +171,10 @@ public class TestingInputSystem : MonoBehaviour
             Debug.Log("Jump!" + context.phase);
             capsuleRB.AddForce(Vector3.up, ForceMode.Impulse);
         }
+    }
+
+    private void DoAttack(InputAction.CallbackContext obj)
+    {
+        animator.SetTrigger("attackTrigger");
     }
 }

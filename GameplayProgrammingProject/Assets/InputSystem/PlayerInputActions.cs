@@ -33,6 +33,22 @@ public class @PlayerInputActions : IInputActionCollection, IDisposable
                     ""expectedControlType"": ""Vector2"",
                     ""processors"": """",
                     ""interactions"": """"
+                },
+                {
+                    ""name"": ""Attack"",
+                    ""type"": ""Button"",
+                    ""id"": ""caa45e38-67b5-4c58-8612-2a79afcef59e"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """"
+                },
+                {
+                    ""name"": ""Look"",
+                    ""type"": ""PassThrough"",
+                    ""id"": ""6f9c4486-2556-42d8-9b49-02b636afbfba"",
+                    ""expectedControlType"": ""Vector2"",
+                    ""processors"": """",
+                    ""interactions"": """"
                 }
             ],
             ""bindings"": [
@@ -118,9 +134,53 @@ public class @PlayerInputActions : IInputActionCollection, IDisposable
                     ""id"": ""2af4d650-5285-4a99-9306-b4ce145a095b"",
                     ""path"": ""<Gamepad>/leftStick"",
                     ""interactions"": """",
-                    ""processors"": ""NormalizeVector2,StickDeadzone"",
+                    ""processors"": ""StickDeadzone"",
                     ""groups"": ""Gamepad"",
                     ""action"": ""Movement"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""3ac34d76-261a-4c36-b8f8-8785c36db89f"",
+                    ""path"": ""<Keyboard>/q"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Keyboard"",
+                    ""action"": ""Attack"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""e5f291d0-ce63-4a1f-8de6-30f0155ecb45"",
+                    ""path"": ""<Gamepad>/buttonEast"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Gamepad"",
+                    ""action"": ""Attack"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""b2041ac8-813c-443b-a738-94c622d71ae9"",
+                    ""path"": ""<Gamepad>/rightStick"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Gamepad"",
+                    ""action"": ""Look"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""a2b022e0-60bb-4088-baf7-09dac18b78e8"",
+                    ""path"": ""<Mouse>/delta"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Keyboard"",
+                    ""action"": ""Look"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -150,6 +210,8 @@ public class @PlayerInputActions : IInputActionCollection, IDisposable
         m_ThirdPersonPlayer = asset.FindActionMap("ThirdPersonPlayer", throwIfNotFound: true);
         m_ThirdPersonPlayer_Jump = m_ThirdPersonPlayer.FindAction("Jump", throwIfNotFound: true);
         m_ThirdPersonPlayer_Movement = m_ThirdPersonPlayer.FindAction("Movement", throwIfNotFound: true);
+        m_ThirdPersonPlayer_Attack = m_ThirdPersonPlayer.FindAction("Attack", throwIfNotFound: true);
+        m_ThirdPersonPlayer_Look = m_ThirdPersonPlayer.FindAction("Look", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -201,12 +263,16 @@ public class @PlayerInputActions : IInputActionCollection, IDisposable
     private IThirdPersonPlayerActions m_ThirdPersonPlayerActionsCallbackInterface;
     private readonly InputAction m_ThirdPersonPlayer_Jump;
     private readonly InputAction m_ThirdPersonPlayer_Movement;
+    private readonly InputAction m_ThirdPersonPlayer_Attack;
+    private readonly InputAction m_ThirdPersonPlayer_Look;
     public struct ThirdPersonPlayerActions
     {
         private @PlayerInputActions m_Wrapper;
         public ThirdPersonPlayerActions(@PlayerInputActions wrapper) { m_Wrapper = wrapper; }
         public InputAction @Jump => m_Wrapper.m_ThirdPersonPlayer_Jump;
         public InputAction @Movement => m_Wrapper.m_ThirdPersonPlayer_Movement;
+        public InputAction @Attack => m_Wrapper.m_ThirdPersonPlayer_Attack;
+        public InputAction @Look => m_Wrapper.m_ThirdPersonPlayer_Look;
         public InputActionMap Get() { return m_Wrapper.m_ThirdPersonPlayer; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -222,6 +288,12 @@ public class @PlayerInputActions : IInputActionCollection, IDisposable
                 @Movement.started -= m_Wrapper.m_ThirdPersonPlayerActionsCallbackInterface.OnMovement;
                 @Movement.performed -= m_Wrapper.m_ThirdPersonPlayerActionsCallbackInterface.OnMovement;
                 @Movement.canceled -= m_Wrapper.m_ThirdPersonPlayerActionsCallbackInterface.OnMovement;
+                @Attack.started -= m_Wrapper.m_ThirdPersonPlayerActionsCallbackInterface.OnAttack;
+                @Attack.performed -= m_Wrapper.m_ThirdPersonPlayerActionsCallbackInterface.OnAttack;
+                @Attack.canceled -= m_Wrapper.m_ThirdPersonPlayerActionsCallbackInterface.OnAttack;
+                @Look.started -= m_Wrapper.m_ThirdPersonPlayerActionsCallbackInterface.OnLook;
+                @Look.performed -= m_Wrapper.m_ThirdPersonPlayerActionsCallbackInterface.OnLook;
+                @Look.canceled -= m_Wrapper.m_ThirdPersonPlayerActionsCallbackInterface.OnLook;
             }
             m_Wrapper.m_ThirdPersonPlayerActionsCallbackInterface = instance;
             if (instance != null)
@@ -232,6 +304,12 @@ public class @PlayerInputActions : IInputActionCollection, IDisposable
                 @Movement.started += instance.OnMovement;
                 @Movement.performed += instance.OnMovement;
                 @Movement.canceled += instance.OnMovement;
+                @Attack.started += instance.OnAttack;
+                @Attack.performed += instance.OnAttack;
+                @Attack.canceled += instance.OnAttack;
+                @Look.started += instance.OnLook;
+                @Look.performed += instance.OnLook;
+                @Look.canceled += instance.OnLook;
             }
         }
     }
@@ -258,5 +336,7 @@ public class @PlayerInputActions : IInputActionCollection, IDisposable
     {
         void OnJump(InputAction.CallbackContext context);
         void OnMovement(InputAction.CallbackContext context);
+        void OnAttack(InputAction.CallbackContext context);
+        void OnLook(InputAction.CallbackContext context);
     }
 }
