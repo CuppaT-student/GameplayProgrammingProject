@@ -3,12 +3,12 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PowerUp : MonoBehaviour
+public class DblJumpPowerUp : MonoBehaviour
 {
 
     public GameObject particleEffect;
-    public float buffLengthSecs = 2.0F;
-    public bool buffActive = false;
+//    public float buffLengthSecs = 2.0F;
+//    public bool buffActive = false;
 
     private void OnTriggerEnter(Collider other)
     {
@@ -28,12 +28,7 @@ public class PowerUp : MonoBehaviour
         }
 
         //apply effect to player
-
-        //Rigidbody rb = player.GetComponent<Rigidbody>();
-        //Vector3 forceDirection = (300, 0, 0)
-        //rb.AddForce(rb.transform.forward, ForceMode.Impulse);
-        player.GetComponent<TestingInputSystem>().increaseMaxSpeed(6.0F, 3.0F);
-        //buffActive = true;
+        player.GetComponent<TestingInputSystem>().canDoubleJump = true;
 
         //destroy this object
         Destroy(gameObject);
@@ -42,7 +37,7 @@ public class PowerUp : MonoBehaviour
 
     private void Update()
     {
-    }
 
+    }
 
 }

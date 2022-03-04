@@ -32,8 +32,13 @@ public class TestingInputSystem : MonoBehaviour
 
     private float moveAmount;
 
+    [Header("Jump Values")]
+    [SerializeField] public bool canDoubleJump = false;
+    [SerializeField] public bool hasJumped = false;
+    [SerializeField] public bool hasDoubleJumped = false;
 
-    
+
+
     private void Awake()
     {
         // get the component - of this object instance - of the type rigidbody and assign it to our local ref
@@ -158,11 +163,28 @@ public class TestingInputSystem : MonoBehaviour
     private void DoJump(InputAction.CallbackContext obj)
     {
         Debug.Log("doJump!");
+       if(hasJumped && !canDoubleJump)
+        {
+            Debug.Log("In Air - Can't Double Jump!");
+        }    
+
+       else if (hasJumped && canDoubleJump)
+        {
+            Debug.Log("In Air - Performing Double Jump!");
+        }
         if (IsGrounded())
         {
             forceDirection += Vector3.up * jumpForce;
+            hasJumped = true;
+        }
+        else if(hasJumped && canDoubleJump)
+        {
+            forceDirection += Vector3.up * jumpForce;
+            hasDoubleJumped = true;
+            canDoubleJump = false;
         }
     }
+
 
     private bool IsGrounded()
     {
@@ -176,6 +198,15 @@ public class TestingInputSystem : MonoBehaviour
         if (Physics.Raycast(ray, out RaycastHit hit, 0.5f))
         {
             Debug.Log("IS GROUNDED!");
+            if (hasJumped)
+            {
+                hasJumped = false;
+                if (hasDoubleJumped)
+                {
+                    hasDoubleJumped = false;
+                }
+            }
+            
             return true;
         }
         else
