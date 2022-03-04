@@ -12,27 +12,28 @@ public class TestingInputSystem : MonoBehaviour
     // create fields for input 
     private PlayerInputActions playerInputActions;
     private InputAction moveAction;
+    private Animator animator;
 
     // create movement fields
     //[SerializeField] public float speed = 2F;
+    private bool isSprinting = false;
 
-    public bool isSprinting = false;
-    
+    [Header("Required Components")]
+    [SerializeField] Camera playerCamera;
+
     [Header("Move Forces")]
-    [SerializeField] public float moveForce = 1f;
+    //[SerializeField] public float moveForce = 1f;
     [SerializeField] public float walkForce = 1f;
     [SerializeField] public float runForce = 3f;
-    [SerializeField] public float sprintForce = 2.0F;
+    private float sprintForce = 2.0F;
     [SerializeField] public float maxSpeed = 3.0f;
-
-    [SerializeField] private float jumpForce = 10.0F;
     private Vector3 forceDirection = Vector3.zero;
-    [SerializeField] Camera playerCamera;
-    private Animator animator;
-
     private float moveAmount;
 
+
+
     [Header("Jump Values")]
+    [SerializeField] private float jumpForce = 10.0F;
     [SerializeField] public bool canDoubleJump = false;
     [SerializeField] public bool hasJumped = false;
     [SerializeField] public bool hasDoubleJumped = false;
@@ -61,10 +62,6 @@ public class TestingInputSystem : MonoBehaviour
         playerInputActions.ThirdPersonPlayer.Attack.started += DoAttack;
         moveAction = playerInputActions.ThirdPersonPlayer.Movement;
         playerInputActions.ThirdPersonPlayer.Enable();
-  
-        playerInputActions.ThirdPersonPlayer.Sprint.started += DoSprint;
-//        playerInputActions.ThirdPersonPlayer.Sprint.performed += i => isSprinting = true;
-
     }
 
 
@@ -73,9 +70,6 @@ public class TestingInputSystem : MonoBehaviour
         playerInputActions.ThirdPersonPlayer.Jump.started -= DoJump;
         playerInputActions.ThirdPersonPlayer.Attack.started -= DoAttack;
         playerInputActions.ThirdPersonPlayer.Disable();
-
-        playerInputActions.ThirdPersonPlayer.Sprint.started -= DoSprint;
-        //playerInputActions.ThirdPersonPlayer.Sprint.canceled += i => isSprinting = false;
     }
 
     private void FixedUpdate()
@@ -85,7 +79,6 @@ public class TestingInputSystem : MonoBehaviour
 
     private void Move()
     {
-
         moveAmount = Mathf.Clamp01(Mathf.Abs(moveAction.ReadValue<Vector2>().x) + Mathf.Abs(moveAction.ReadValue<Vector2>().y));
 
         if (isSprinting && moveAmount >= 0.5F)
@@ -127,7 +120,6 @@ public class TestingInputSystem : MonoBehaviour
         LookAt();
     }
 
-
     private void LookAt()
     {
         Vector3 direction = capsuleRB.velocity;
@@ -152,7 +144,6 @@ public class TestingInputSystem : MonoBehaviour
         forward.y = 0;
         return forward.normalized;
     }
-
     private Vector3 GetCameraRight(Camera playerCamera)
     {
         Vector3 right = playerCamera.transform.right;
@@ -162,16 +153,18 @@ public class TestingInputSystem : MonoBehaviour
 
     private void DoJump(InputAction.CallbackContext obj)
     {
+        // Jump Button Pressed Logs
         Debug.Log("doJump!");
        if(hasJumped && !canDoubleJump)
         {
             Debug.Log("In Air - Can't Double Jump!");
         }    
-
        else if (hasJumped && canDoubleJump)
         {
             Debug.Log("In Air - Performing Double Jump!");
         }
+
+       // Jump Function 
         if (IsGrounded())
         {
             forceDirection += Vector3.up * jumpForce;
@@ -180,12 +173,10 @@ public class TestingInputSystem : MonoBehaviour
         else if(hasJumped && canDoubleJump)
         {
             forceDirection += Vector3.up * jumpForce;
-            hasDoubleJumped = true;
+            hasDoubleJumped = true; // Unused bool currently, but will be used for animation
             canDoubleJump = false;
         }
     }
-
-
     private bool IsGrounded()
     {
         // define a new ray at with -
@@ -216,45 +207,19 @@ public class TestingInputSystem : MonoBehaviour
         }
     }
 
-
-
-    public void Jump(InputAction.CallbackContext context)
-    {
-        Debug.Log(context);
-        if (context.performed)
-        { 
-            Debug.Log("Jump!" + context.phase);
-            capsuleRB.AddForce(Vector3.up, ForceMode.Impulse);
-        }
-    }
-
     private void DoAttack(InputAction.CallbackContext obj)
     {
         animator.SetTrigger("attackTrigger");
-    }
-    private void DoSprint(InputAction.CallbackContext obj)
-    {
-        Debug.Log("Sprint!");
-        if (obj.performed)
-        {
-            isSprinting = true;
-            Debug.Log("isSprint True!");
-        }
-        if (obj.canceled)
-        {
-            Debug.Log("Sprint False!");
-            isSprinting = false;
-        }
     }
 
     public void increaseMaxSpeed(float newSpeed, float time)
     {
         Debug.Log("increasing max speed!");
         maxSpeed += newSpeed;
-        StartCoroutine(buffTime(newSpeed, time));
+        StartCoroutine(SpeedBuffTime(newSpeed, time));
         
     }
-    IEnumerator buffTime(float newSpeed, float time)
+    IEnumerator SpeedBuffTime(float newSpeed, float time)
     {
         yield return new WaitForSeconds(time);
         Debug.Log("Resetting Max Speed!");
@@ -263,16 +228,3 @@ public class TestingInputSystem : MonoBehaviour
 
 
 }
-
-
-
-
-
-/*
-private void Movement_Performed(InputAction.CallbackContext context)
-{
-    Debug.Log(context);
-    Vector2 inputVector = context.ReadValue<Vector2>();
-    capsuleRB.AddForce(new Vector3(inputVector.x, 0, inputVector.y) * speed, ForceMode.Force);
-}
-*/
