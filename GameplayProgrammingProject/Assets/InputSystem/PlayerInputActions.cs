@@ -49,6 +49,14 @@ public class @PlayerInputActions : IInputActionCollection, IDisposable
                     ""expectedControlType"": ""Vector2"",
                     ""processors"": """",
                     ""interactions"": """"
+                },
+                {
+                    ""name"": ""Sprint"",
+                    ""type"": ""Button"",
+                    ""id"": ""29e94567-d15f-4b0e-952a-337036118733"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """"
                 }
             ],
             ""bindings"": [
@@ -134,7 +142,7 @@ public class @PlayerInputActions : IInputActionCollection, IDisposable
                     ""id"": ""2af4d650-5285-4a99-9306-b4ce145a095b"",
                     ""path"": ""<Gamepad>/leftStick"",
                     ""interactions"": """",
-                    ""processors"": ""StickDeadzone"",
+                    ""processors"": """",
                     ""groups"": ""Gamepad"",
                     ""action"": ""Movement"",
                     ""isComposite"": false,
@@ -183,6 +191,28 @@ public class @PlayerInputActions : IInputActionCollection, IDisposable
                     ""action"": ""Look"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""f0099c10-9803-408e-990d-508aa3c3017f"",
+                    ""path"": ""<Gamepad>/leftTrigger"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Gamepad"",
+                    ""action"": ""Sprint"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""80a83b59-92b2-4d86-a24a-1639f61de0b5"",
+                    ""path"": ""<Keyboard>/shift"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Keyboard"",
+                    ""action"": ""Sprint"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -212,6 +242,7 @@ public class @PlayerInputActions : IInputActionCollection, IDisposable
         m_ThirdPersonPlayer_Movement = m_ThirdPersonPlayer.FindAction("Movement", throwIfNotFound: true);
         m_ThirdPersonPlayer_Attack = m_ThirdPersonPlayer.FindAction("Attack", throwIfNotFound: true);
         m_ThirdPersonPlayer_Look = m_ThirdPersonPlayer.FindAction("Look", throwIfNotFound: true);
+        m_ThirdPersonPlayer_Sprint = m_ThirdPersonPlayer.FindAction("Sprint", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -265,6 +296,7 @@ public class @PlayerInputActions : IInputActionCollection, IDisposable
     private readonly InputAction m_ThirdPersonPlayer_Movement;
     private readonly InputAction m_ThirdPersonPlayer_Attack;
     private readonly InputAction m_ThirdPersonPlayer_Look;
+    private readonly InputAction m_ThirdPersonPlayer_Sprint;
     public struct ThirdPersonPlayerActions
     {
         private @PlayerInputActions m_Wrapper;
@@ -273,6 +305,7 @@ public class @PlayerInputActions : IInputActionCollection, IDisposable
         public InputAction @Movement => m_Wrapper.m_ThirdPersonPlayer_Movement;
         public InputAction @Attack => m_Wrapper.m_ThirdPersonPlayer_Attack;
         public InputAction @Look => m_Wrapper.m_ThirdPersonPlayer_Look;
+        public InputAction @Sprint => m_Wrapper.m_ThirdPersonPlayer_Sprint;
         public InputActionMap Get() { return m_Wrapper.m_ThirdPersonPlayer; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -294,6 +327,9 @@ public class @PlayerInputActions : IInputActionCollection, IDisposable
                 @Look.started -= m_Wrapper.m_ThirdPersonPlayerActionsCallbackInterface.OnLook;
                 @Look.performed -= m_Wrapper.m_ThirdPersonPlayerActionsCallbackInterface.OnLook;
                 @Look.canceled -= m_Wrapper.m_ThirdPersonPlayerActionsCallbackInterface.OnLook;
+                @Sprint.started -= m_Wrapper.m_ThirdPersonPlayerActionsCallbackInterface.OnSprint;
+                @Sprint.performed -= m_Wrapper.m_ThirdPersonPlayerActionsCallbackInterface.OnSprint;
+                @Sprint.canceled -= m_Wrapper.m_ThirdPersonPlayerActionsCallbackInterface.OnSprint;
             }
             m_Wrapper.m_ThirdPersonPlayerActionsCallbackInterface = instance;
             if (instance != null)
@@ -310,6 +346,9 @@ public class @PlayerInputActions : IInputActionCollection, IDisposable
                 @Look.started += instance.OnLook;
                 @Look.performed += instance.OnLook;
                 @Look.canceled += instance.OnLook;
+                @Sprint.started += instance.OnSprint;
+                @Sprint.performed += instance.OnSprint;
+                @Sprint.canceled += instance.OnSprint;
             }
         }
     }
@@ -338,5 +377,6 @@ public class @PlayerInputActions : IInputActionCollection, IDisposable
         void OnMovement(InputAction.CallbackContext context);
         void OnAttack(InputAction.CallbackContext context);
         void OnLook(InputAction.CallbackContext context);
+        void OnSprint(InputAction.CallbackContext context);
     }
 }

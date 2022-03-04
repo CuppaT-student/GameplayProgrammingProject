@@ -14,12 +14,23 @@ public class TestingInputSystem : MonoBehaviour
     private InputAction moveAction;
 
     // create movement fields
-    [SerializeField] private float moveForce = 1f;
-    [SerializeField] private float maxSpeed = 5f;
-    [SerializeField] private float jumpForce = 10;
+    //[SerializeField] public float speed = 2F;
+
+    public bool isSprinting = false;
+    
+    [Header("Move Forces")]
+    [SerializeField] public float moveForce = 1f;
+    [SerializeField] public float walkForce = 1f;
+    [SerializeField] public float runForce = 3f;
+    [SerializeField] public float sprintForce = 2.0F;
+    [SerializeField] private float maxSpeed = 3.0f;
+
+    [SerializeField] private float jumpForce = 10.0F;
     private Vector3 forceDirection = Vector3.zero;
     [SerializeField] Camera playerCamera;
     private Animator animator;
+
+    private float moveAmount;
 
 
     
@@ -45,24 +56,67 @@ public class TestingInputSystem : MonoBehaviour
         playerInputActions.ThirdPersonPlayer.Attack.started += DoAttack;
         moveAction = playerInputActions.ThirdPersonPlayer.Movement;
         playerInputActions.ThirdPersonPlayer.Enable();
+  
+        playerInputActions.ThirdPersonPlayer.Sprint.started += DoSprint;
+//        playerInputActions.ThirdPersonPlayer.Sprint.performed += i => isSprinting = true;
+
     }
 
-
+    private void DoSprint(InputAction.CallbackContext obj)
+    {
+        Debug.Log("Sprint!");
+        if (obj.performed)
+        {
+            isSprinting = true;
+            Debug.Log("isSprint True!");
+        }
+        if (obj.canceled)
+        {
+            Debug.Log("Sprint False!");
+            isSprinting = false;
+        }
+    }
 
     private void onDisable()
     {
         playerInputActions.ThirdPersonPlayer.Jump.started -= DoJump;
         playerInputActions.ThirdPersonPlayer.Attack.started -= DoAttack;
         playerInputActions.ThirdPersonPlayer.Disable();
+
+        playerInputActions.ThirdPersonPlayer.Sprint.started -= DoSprint;
+        //playerInputActions.ThirdPersonPlayer.Sprint.canceled += i => isSprinting = false;
     }
 
     private void FixedUpdate()
     {
-        
-        //This piece of code moves thes character relative to the camera
-        forceDirection += moveAction.ReadValue<Vector2>().x * GetCameraRight(playerCamera) * moveForce;
-        forceDirection += moveAction.ReadValue<Vector2>().y * GetCameraForward(playerCamera) * moveForce;
-//        capsuleRB.velocity = forceDirection * 2.5f;
+        Move();
+    }
+
+    private void Move()
+    {
+
+        moveAmount = Mathf.Clamp01(Mathf.Abs(moveAction.ReadValue<Vector2>().x) + Mathf.Abs(moveAction.ReadValue<Vector2>().y));
+
+        if (isSprinting && moveAmount >= 0.5F)
+        {
+            forceDirection += moveAction.ReadValue<Vector2>().x * GetCameraRight(playerCamera) * sprintForce;
+            forceDirection += moveAction.ReadValue<Vector2>().y * GetCameraForward(playerCamera) * sprintForce;
+
+        }
+        else
+        {
+            if (moveAmount >= 0.5F)
+            {
+                forceDirection += moveAction.ReadValue<Vector2>().x * GetCameraRight(playerCamera) * runForce;
+                forceDirection += moveAction.ReadValue<Vector2>().y * GetCameraForward(playerCamera) * runForce;
+            }
+            else
+            {
+                forceDirection += moveAction.ReadValue<Vector2>().x * GetCameraRight(playerCamera) * walkForce;
+                forceDirection += moveAction.ReadValue<Vector2>().y * GetCameraForward(playerCamera) * walkForce;
+            }
+        }
+        //        capsuleRB.velocity = forceDirection * 2.5f;
         capsuleRB.AddForce(forceDirection, ForceMode.Impulse);
         forceDirection = Vector3.zero;
 
@@ -80,16 +134,9 @@ public class TestingInputSystem : MonoBehaviour
 
         // Look at function controls the direction of our rb character
         LookAt();
-
-        /* OLD TUTORIAL CODE
-        Vector2 inputVector = playerInputActions.ThirdPersonPlayer.Movement.ReadValue<Vector2>();
-        float speed = 2F;
-        capsuleRB.AddForce(new Vector3(inputVector.x, 0, inputVector.y) * speed, ForceMode.Force);
-        */
     }
 
 
-   
     private void LookAt()
     {
         Vector3 direction = capsuleRB.velocity;
@@ -154,15 +201,6 @@ public class TestingInputSystem : MonoBehaviour
 
 
 
-    private void Movement_Performed(InputAction.CallbackContext context)
-    {
-        Debug.Log(context);
-        Vector2 inputVector = context.ReadValue<Vector2>();
-        float speed = 2F;
-        capsuleRB.AddForce(new Vector3(inputVector.x, 0, inputVector.y) * speed, ForceMode.Force);
-    }
-    
-
     public void Jump(InputAction.CallbackContext context)
     {
         Debug.Log(context);
@@ -178,3 +216,15 @@ public class TestingInputSystem : MonoBehaviour
         animator.SetTrigger("attackTrigger");
     }
 }
+
+
+
+
+/*
+private void Movement_Performed(InputAction.CallbackContext context)
+{
+    Debug.Log(context);
+    Vector2 inputVector = context.ReadValue<Vector2>();
+    capsuleRB.AddForce(new Vector3(inputVector.x, 0, inputVector.y) * speed, ForceMode.Force);
+}
+*/
