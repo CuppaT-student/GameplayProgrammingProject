@@ -23,7 +23,7 @@ public class TestingInputSystem : MonoBehaviour
     [SerializeField] public float walkForce = 1f;
     [SerializeField] public float runForce = 3f;
     [SerializeField] public float sprintForce = 2.0F;
-    [SerializeField] private float maxSpeed = 3.0f;
+    [SerializeField] public float maxSpeed = 3.0f;
 
     [SerializeField] private float jumpForce = 10.0F;
     private Vector3 forceDirection = Vector3.zero;
@@ -62,20 +62,6 @@ public class TestingInputSystem : MonoBehaviour
 
     }
 
-    private void DoSprint(InputAction.CallbackContext obj)
-    {
-        Debug.Log("Sprint!");
-        if (obj.performed)
-        {
-            isSprinting = true;
-            Debug.Log("isSprint True!");
-        }
-        if (obj.canceled)
-        {
-            Debug.Log("Sprint False!");
-            isSprinting = false;
-        }
-    }
 
     private void onDisable()
     {
@@ -215,7 +201,38 @@ public class TestingInputSystem : MonoBehaviour
     {
         animator.SetTrigger("attackTrigger");
     }
+    private void DoSprint(InputAction.CallbackContext obj)
+    {
+        Debug.Log("Sprint!");
+        if (obj.performed)
+        {
+            isSprinting = true;
+            Debug.Log("isSprint True!");
+        }
+        if (obj.canceled)
+        {
+            Debug.Log("Sprint False!");
+            isSprinting = false;
+        }
+    }
+
+    public void increaseMaxSpeed(float newSpeed, float time)
+    {
+        Debug.Log("increasing max speed!");
+        maxSpeed += newSpeed;
+        StartCoroutine(buffTime(newSpeed, time));
+        
+    }
+    IEnumerator buffTime(float newSpeed, float time)
+    {
+        yield return new WaitForSeconds(time);
+        Debug.Log("Resetting Max Speed!");
+        maxSpeed -= newSpeed;
+    }
+
+
 }
+
 
 
 

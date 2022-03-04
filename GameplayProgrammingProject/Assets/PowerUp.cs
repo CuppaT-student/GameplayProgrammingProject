@@ -7,24 +7,42 @@ public class PowerUp : MonoBehaviour
 {
 
     public GameObject particleEffect;
+    public float buffLengthSecs = 2.0F;
+    public bool buffActive = false;
 
     private void OnTriggerEnter(Collider other)
     {
        if (other.CompareTag("Player"))
         {
-            Pickup();
+            Pickup(other);
         }
     }
 
-    private void Pickup()
+    private void Pickup(Collider player)
     {
         Debug.Log("Power Up Picked Up!!");
         //spawn particles
-        Instantiate(particleEffect, transform.position, transform.rotation);
+        if (particleEffect != null)
+        {
+            Instantiate(particleEffect, transform.position, transform.rotation);
+        }
 
         //apply effect to player
+
+        //Rigidbody rb = player.GetComponent<Rigidbody>();
+        //Vector3 forceDirection = (300, 0, 0)
+        //rb.AddForce(rb.transform.forward, ForceMode.Impulse);
+        player.GetComponent<TestingInputSystem>().increaseMaxSpeed(6.0F, 3.0F);
+        //buffActive = true;
 
         //destroy this object
         Destroy(gameObject);
     }
+
+
+    private void Update()
+    {
+    }
+
+
 }
