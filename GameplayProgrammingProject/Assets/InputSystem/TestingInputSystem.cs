@@ -38,6 +38,8 @@ public class TestingInputSystem : MonoBehaviour
     [SerializeField] public bool hasJumped = false;
     [SerializeField] public bool hasDoubleJumped = false;
 
+    [SerializeField] public bool triggerHeld = false;
+
 
 
     private void Awake()
@@ -48,12 +50,10 @@ public class TestingInputSystem : MonoBehaviour
         playerInputActions = new PlayerInputActions();
 
         animator = this.GetComponent<Animator>();
-        
-        /* old tutorial code
-        playerInputActions.ThirdPersonPlayer.Enable();
-        playerInputActions.ThirdPersonPlayer.Jump.performed += Jump;
-        playerInputActions.ThirdPersonPlayer.Movement.performed += Movement_Performed;
-        */
+
+        playerInputActions.ThirdPersonPlayer.Trigger.performed += DoTrigger;
+        playerInputActions.ThirdPersonPlayer.Trigger.canceled += DoTrigger;
+
     }
 
     private void OnEnable()
@@ -61,15 +61,20 @@ public class TestingInputSystem : MonoBehaviour
         playerInputActions.ThirdPersonPlayer.Jump.started += DoJump;
         playerInputActions.ThirdPersonPlayer.Attack.started += DoAttack;
         moveAction = playerInputActions.ThirdPersonPlayer.Movement;
+        playerInputActions.ThirdPersonPlayer.Trigger.performed += DoTrigger;
+        playerInputActions.ThirdPersonPlayer.Trigger.canceled += DoTrigger;
         playerInputActions.ThirdPersonPlayer.Enable();
     }
-
 
     private void onDisable()
     {
         playerInputActions.ThirdPersonPlayer.Jump.started -= DoJump;
         playerInputActions.ThirdPersonPlayer.Attack.started -= DoAttack;
+        playerInputActions.ThirdPersonPlayer.Trigger.performed -= DoTrigger;
+        playerInputActions.ThirdPersonPlayer.Trigger.canceled -= DoTrigger;
+
         playerInputActions.ThirdPersonPlayer.Disable();
+ 
     }
 
     private void FixedUpdate()
@@ -227,4 +232,9 @@ public class TestingInputSystem : MonoBehaviour
     }
 
 
+    private void DoTrigger(InputAction.CallbackContext obj)
+    {
+        triggerHeld = obj.ReadValueAsButton();
+        Debug.Log("Trigger Pressed");
+    }
 }

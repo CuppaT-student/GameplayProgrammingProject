@@ -57,6 +57,14 @@ public class @PlayerInputActions : IInputActionCollection, IDisposable
                     ""expectedControlType"": ""Button"",
                     ""processors"": """",
                     ""interactions"": """"
+                },
+                {
+                    ""name"": ""Trigger"",
+                    ""type"": ""PassThrough"",
+                    ""id"": ""cfe1076e-82cc-4f1c-896d-cfc613323ac5"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """"
                 }
             ],
             ""bindings"": [
@@ -213,6 +221,28 @@ public class @PlayerInputActions : IInputActionCollection, IDisposable
                     ""action"": ""Sprint"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""61223d0c-cd5c-423b-a81b-626544edfc73"",
+                    ""path"": ""<Gamepad>/buttonWest"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Gamepad"",
+                    ""action"": ""Trigger"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""3f038bc5-0921-4734-ba26-af11d06e6702"",
+                    ""path"": ""<Keyboard>/e"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Keyboard"",
+                    ""action"": ""Trigger"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -243,6 +273,7 @@ public class @PlayerInputActions : IInputActionCollection, IDisposable
         m_ThirdPersonPlayer_Attack = m_ThirdPersonPlayer.FindAction("Attack", throwIfNotFound: true);
         m_ThirdPersonPlayer_Look = m_ThirdPersonPlayer.FindAction("Look", throwIfNotFound: true);
         m_ThirdPersonPlayer_Sprint = m_ThirdPersonPlayer.FindAction("Sprint", throwIfNotFound: true);
+        m_ThirdPersonPlayer_Trigger = m_ThirdPersonPlayer.FindAction("Trigger", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -297,6 +328,7 @@ public class @PlayerInputActions : IInputActionCollection, IDisposable
     private readonly InputAction m_ThirdPersonPlayer_Attack;
     private readonly InputAction m_ThirdPersonPlayer_Look;
     private readonly InputAction m_ThirdPersonPlayer_Sprint;
+    private readonly InputAction m_ThirdPersonPlayer_Trigger;
     public struct ThirdPersonPlayerActions
     {
         private @PlayerInputActions m_Wrapper;
@@ -306,6 +338,7 @@ public class @PlayerInputActions : IInputActionCollection, IDisposable
         public InputAction @Attack => m_Wrapper.m_ThirdPersonPlayer_Attack;
         public InputAction @Look => m_Wrapper.m_ThirdPersonPlayer_Look;
         public InputAction @Sprint => m_Wrapper.m_ThirdPersonPlayer_Sprint;
+        public InputAction @Trigger => m_Wrapper.m_ThirdPersonPlayer_Trigger;
         public InputActionMap Get() { return m_Wrapper.m_ThirdPersonPlayer; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -330,6 +363,9 @@ public class @PlayerInputActions : IInputActionCollection, IDisposable
                 @Sprint.started -= m_Wrapper.m_ThirdPersonPlayerActionsCallbackInterface.OnSprint;
                 @Sprint.performed -= m_Wrapper.m_ThirdPersonPlayerActionsCallbackInterface.OnSprint;
                 @Sprint.canceled -= m_Wrapper.m_ThirdPersonPlayerActionsCallbackInterface.OnSprint;
+                @Trigger.started -= m_Wrapper.m_ThirdPersonPlayerActionsCallbackInterface.OnTrigger;
+                @Trigger.performed -= m_Wrapper.m_ThirdPersonPlayerActionsCallbackInterface.OnTrigger;
+                @Trigger.canceled -= m_Wrapper.m_ThirdPersonPlayerActionsCallbackInterface.OnTrigger;
             }
             m_Wrapper.m_ThirdPersonPlayerActionsCallbackInterface = instance;
             if (instance != null)
@@ -349,6 +385,9 @@ public class @PlayerInputActions : IInputActionCollection, IDisposable
                 @Sprint.started += instance.OnSprint;
                 @Sprint.performed += instance.OnSprint;
                 @Sprint.canceled += instance.OnSprint;
+                @Trigger.started += instance.OnTrigger;
+                @Trigger.performed += instance.OnTrigger;
+                @Trigger.canceled += instance.OnTrigger;
             }
         }
     }
@@ -378,5 +417,6 @@ public class @PlayerInputActions : IInputActionCollection, IDisposable
         void OnAttack(InputAction.CallbackContext context);
         void OnLook(InputAction.CallbackContext context);
         void OnSprint(InputAction.CallbackContext context);
+        void OnTrigger(InputAction.CallbackContext context);
     }
 }
