@@ -24,12 +24,14 @@ public class SplineFollowSwitch : MonoBehaviour
             if (!isExit)
             {
                 splineCamera.Priority = 11;
-                follower.pathCreator = spline;
+                follower.currentPath = spline;
+                follower.splineSceneActive = true;
             }
             else
             {
                 splineCamera.Priority = 9;
-                follower.pathCreator = null;
+                follower.currentPath = null;
+                follower.splineSceneActive = false;
             }
         }
     }

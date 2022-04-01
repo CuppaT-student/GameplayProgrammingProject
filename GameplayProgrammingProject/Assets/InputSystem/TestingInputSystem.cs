@@ -8,7 +8,7 @@ public class TestingInputSystem : MonoBehaviour
 {
     // create a fields for Rigidbody
     private Rigidbody capsuleRB;
-    
+
     // create fields for input 
     private PlayerInputActions playerInputActions;
     private InputAction moveAction;
@@ -27,18 +27,26 @@ public class TestingInputSystem : MonoBehaviour
     [SerializeField] public float runForce = 3f;
     private float sprintForce = 2.0F;
     [SerializeField] public float maxSpeed = 3.0f;
-    private Vector3 forceDirection = Vector3.zero;
-    private float moveAmount;
+    public Vector3 forceDirection = Vector3.zero;
+    public float moveAmount;
 
 
 
     [Header("Jump Values")]
     [SerializeField] private float jumpForce = 10.0F;
     [SerializeField] public bool canDoubleJump = false;
+    [SerializeField] private float jumpCooldownTime = 1.0F;
+    [SerializeField] public bool jumpCooldown = false;
     [SerializeField] public bool hasJumped = false;
     [SerializeField] public bool hasDoubleJumped = false;
+    [SerializeField] public bool landedJump = false;
 
     [SerializeField] public bool triggerHeld = false;
+
+    [SerializeField] public bool onSpline = false;
+    [SerializeField] public bool jumpedOnSpline = false;
+    private SplineFollower follower;
+    public float pathDistanceTravelled = 0;
 
 
 
@@ -53,6 +61,8 @@ public class TestingInputSystem : MonoBehaviour
 
         playerInputActions.ThirdPersonPlayer.Trigger.performed += DoTrigger;
         playerInputActions.ThirdPersonPlayer.Trigger.canceled += DoTrigger;
+
+        follower = this.GetComponent<SplineFollower>();
 
     }
 
@@ -74,18 +84,81 @@ public class TestingInputSystem : MonoBehaviour
         playerInputActions.ThirdPersonPlayer.Trigger.canceled -= DoTrigger;
 
         playerInputActions.ThirdPersonPlayer.Disable();
- 
+
     }
+
 
     private void FixedUpdate()
     {
-        Move();
+        moveAmount = Mathf.Clamp01(Mathf.Abs(moveAction.ReadValue<Vector2>().x) + Mathf.Abs(moveAction.ReadValue<Vector2>().y));
+
+        if (!jumpCooldown)
+        {
+            if (hasJumped && IsGrounded())
+            {
+                landedJump = true;
+            }
+        }
+
+        if (follower.marioAutoRunStyle)
+        {
+            if (jumpedOnSpline)
+            {
+                if (landedJump && follower.currentPath == null)
+                {
+                    follower.currentPath = follower.previousPath;
+
+                }
+            }
+        }
+
+
+        if (follower.onSpline)
+        {
+            onSpline = true;
+        }
+        else
+        {
+            onSpline = false;
+        }
+
+        if (onSpline)
+        {
+            if (!follower.marioAutoRunStyle)
+            {
+                SplineMove();
+            }
+        }
+        else
+        {
+            Move();
+        }
+    }
+
+    private void SplineMove()
+    {
+        /*        float distanceTravelledInJump = 0;
+                if (hasJumped)
+                {
+
+                    distanceTravelledInJump += moveAction.ReadValue<Vector2>().x / 10;
+                    if (landedJump)
+                    {
+                        follower.distanceTravelled += distanceTravelledInJump;
+                    }
+                }*/
+
+
+
+        if (moveAction.ReadValue<Vector2>().x != 0)
+        {
+            follower.distanceTravelled += moveAction.ReadValue<Vector2>().x / 10;
+        }
+
     }
 
     private void Move()
     {
-        moveAmount = Mathf.Clamp01(Mathf.Abs(moveAction.ReadValue<Vector2>().x) + Mathf.Abs(moveAction.ReadValue<Vector2>().y));
-
         if (isSprinting && moveAmount >= 0.5F)
         {
             forceDirection += moveAction.ReadValue<Vector2>().x * GetCameraRight(playerCamera) * sprintForce;
@@ -158,28 +231,48 @@ public class TestingInputSystem : MonoBehaviour
 
     private void DoJump(InputAction.CallbackContext obj)
     {
+
         // Jump Button Pressed Logs
         Debug.Log("doJump!");
-       if(hasJumped && !canDoubleJump)
+        if (hasJumped && !canDoubleJump)
         {
             Debug.Log("In Air - Can't Double Jump!");
-        }    
-       else if (hasJumped && canDoubleJump)
-        {
-            Debug.Log("In Air - Performing Double Jump!");
         }
 
-       // Jump Function 
+        // Jump Function 
         if (IsGrounded())
         {
+            if (follower.marioAutoRunStyle)
+            {
+                if (follower.currentPath != null)
+                {
+                    follower.previousPath = follower.currentPath;
+                    follower.currentPath = null;
+                    jumpedOnSpline = true;
+                }
+            }
+
+            else if (follower.currentPath != null)
+            {
+                follower.previousPath = follower.currentPath;
+                follower.currentPath = null;
+                jumpedOnSpline = true;
+                follower.onSpline = false;
+            }
+
             forceDirection += Vector3.up * jumpForce;
             hasJumped = true;
+            landedJump = false;
+            jumpCooldown = true;
+            StartCoroutine(jumpCooldownTimer(jumpCooldownTime));
         }
-        else if(hasJumped && canDoubleJump)
+        else if (hasJumped && canDoubleJump)
         {
+            Debug.Log("In Air - Performing Double Jump!");
             forceDirection += Vector3.up * jumpForce;
             hasDoubleJumped = true; // Unused bool currently, but will be used for animation
             canDoubleJump = false;
+            landedJump = false;
         }
     }
     private bool IsGrounded()
@@ -189,20 +282,22 @@ public class TestingInputSystem : MonoBehaviour
         // direction = down (4Head)
         Ray ray = new Ray(this.transform.position + Vector3.up * 0.25F, Vector3.down);
 
-        Debug.DrawLine(ray.origin, ray.origin + Vector3.down * 1.1f, Color.red, 2f);
+        Debug.DrawLine(ray.origin, ray.origin + Vector3.down * 0.9f, Color.red, 2f);
 
         if (Physics.Raycast(ray, out RaycastHit hit, 0.5f))
         {
             Debug.Log("IS GROUNDED!");
             if (hasJumped)
             {
-                hasJumped = false;
+
                 if (hasDoubleJumped)
                 {
                     hasDoubleJumped = false;
                 }
+                landedJump = true;
+                hasJumped = false;
             }
-            
+
             return true;
         }
         else
@@ -210,6 +305,12 @@ public class TestingInputSystem : MonoBehaviour
             Debug.Log("NOT GROUNDED!");
             return false;
         }
+    }
+    IEnumerator jumpCooldownTimer(float time)
+    {
+        yield return new WaitForSeconds(time);
+        Debug.Log("Jump Cooldown, Now check if Grounded!");
+        jumpCooldown = false;
     }
 
     private void DoAttack(InputAction.CallbackContext obj)
@@ -222,7 +323,7 @@ public class TestingInputSystem : MonoBehaviour
         Debug.Log("increasing max speed!");
         maxSpeed += newSpeed;
         StartCoroutine(SpeedBuffTime(newSpeed, time));
-        
+
     }
     IEnumerator SpeedBuffTime(float newSpeed, float time)
     {

@@ -5,38 +5,89 @@ using PathCreation;
 
 public class SplineFollower : MonoBehaviour
 {
-    public PathCreator pathCreator;
+    public PathCreator currentPath;
+    public PathCreator previousPath;
     public EndOfPathInstruction endOfPathInstruction;
     public float speed = 5;
-    float distanceTravelled;
+    public float distanceTravelled;
     public bool onSpline = false;
+    public bool splineSceneActive = false;
+
+    public bool splineStarted = false;
+
+    public bool marioAutoRunStyle = true;
+
+    private Rigidbody rb;
+
+    private void Awake()
+    {
+        rb = this.GetComponent<Rigidbody>();
+    }
 
     void Start()
     {
-        if (pathCreator != null)
+        if (currentPath != null)
         {
             // Subscribed to the pathUpdated event so that we're notified if the path changes during the game
-            pathCreator.pathUpdated += OnPathChanged;
+            currentPath.pathUpdated += OnPathChanged;
         }
     }
 
     void Update()
     {
-        if (pathCreator != null)
+        if (currentPath != null)
         {
-            onSpline = true;
-            distanceTravelled += speed * Time.deltaTime;
-            transform.position = pathCreator.path.GetPointAtDistance(distanceTravelled, endOfPathInstruction);
-            transform.rotation = pathCreator.path.GetRotationAtDistance(distanceTravelled, endOfPathInstruction);
+            if (marioAutoRunStyle)
+            {
+                onSpline = true;
+                distanceTravelled += speed * Time.deltaTime;
+                transform.position = currentPath.path.GetPointAtDistance(distanceTravelled, endOfPathInstruction);
+                transform.rotation = currentPath.path.GetRotationAtDistance(distanceTravelled, endOfPathInstruction);
+            }
+
+            else
+            {
+
+                if (!splineStarted)
+                {
+                    transform.position = new Vector3(currentPath.path.GetPointAtDistance(distanceTravelled, endOfPathInstruction).x, rb.transform.position.y, currentPath.path.GetPointAtDistance(distanceTravelled, endOfPathInstruction).z);
+                    splineStarted = true;
+                    onSpline = true;
+                }
+                if (splineStarted && !onSpline)
+                {
+
+                    currentPath = previousPath;
+                    transform.position = new Vector3(currentPath.path.GetPointAtDistance(distanceTravelled, endOfPathInstruction).x, rb.transform.position.y, currentPath.path.GetPointAtDistance(distanceTravelled, endOfPathInstruction).z);
+                    transform.rotation = currentPath.path.GetRotationAtDistance(distanceTravelled, endOfPathInstruction);
+                    onSpline = true;
+
+                }
+                else
+                {
+
+                    transform.position = new Vector3(currentPath.path.GetPointAtDistance(distanceTravelled, endOfPathInstruction).x, rb.transform.position.y, currentPath.path.GetPointAtDistance(distanceTravelled, endOfPathInstruction).z);
+                    transform.rotation = currentPath.path.GetRotationAtDistance(distanceTravelled, endOfPathInstruction);
+                }
+            }
         }
-        onSpline = false;
+        else
+        {
+            onSpline = false;
+        }
+
+        if (!splineSceneActive)
+        {
+            currentPath = null;
+            previousPath = null;
+        }
     }
 
     // If the path changes during the game, update the distance travelled so that the follower's position on the new path
     // is as close as possible to its position on the old path
     void OnPathChanged()
     {
-        distanceTravelled = pathCreator.path.GetClosestDistanceAlongPath(transform.position);
+        distanceTravelled = currentPath.path.GetClosestDistanceAlongPath(transform.position);
     }
 
 }
