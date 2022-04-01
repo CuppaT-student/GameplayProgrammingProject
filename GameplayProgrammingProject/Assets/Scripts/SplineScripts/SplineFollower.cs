@@ -78,6 +78,7 @@ public class SplineFollower : MonoBehaviour
 
         if (!splineSceneActive)
         {
+            distanceTravelled = 0;
             currentPath = null;
             previousPath = null;
         }

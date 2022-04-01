@@ -11,6 +11,8 @@ public class SplineFollowSwitch : MonoBehaviour
     public SplineFollower follower;
     public bool isExit;
     public CinemachineVirtualCamera splineCamera;
+    public CinemachineVirtualCamera optionalSplineCamera;
+
 
     private void OnTriggerExit(Collider other)
     {
@@ -23,6 +25,11 @@ public class SplineFollowSwitch : MonoBehaviour
             follower = other.GetComponent<SplineFollower>();
             if (!isExit)
             {
+                /*if(follower.splineSceneActive)
+                {
+                    //get prev spline camera and reset its priority
+                }*/
+                follower.distanceTravelled = 0;
                 splineCamera.Priority = 11;
                 follower.currentPath = spline;
                 follower.splineSceneActive = true;
@@ -30,6 +37,10 @@ public class SplineFollowSwitch : MonoBehaviour
             else
             {
                 splineCamera.Priority = 9;
+                if (optionalSplineCamera != null)
+                {
+                    optionalSplineCamera.Priority = 9;
+                }
                 follower.currentPath = null;
                 follower.splineSceneActive = false;
             }
