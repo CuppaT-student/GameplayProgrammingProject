@@ -56,6 +56,7 @@ public class TestingInputSystem : MonoBehaviour
 
     [SerializeField] public bool triggerHeld = false;
 
+    [SerializeField] public float splineSpeed = 10;
     [SerializeField] public bool onSpline = false;
     [SerializeField] public bool jumpedOnSpline = false;
     private SplineFollower follower;
@@ -215,7 +216,7 @@ public class TestingInputSystem : MonoBehaviour
 
         if (moveAction.ReadValue<Vector2>().x != 0)
         {
-            follower.distanceTravelled += moveAction.ReadValue<Vector2>().x / 10;
+            follower.distanceTravelled += moveAction.ReadValue<Vector2>().x * splineSpeed * Time.fixedDeltaTime;
         }
 
     }

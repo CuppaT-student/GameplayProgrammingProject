@@ -6096,7 +6096,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Path: {fileID: 791736279}
-  m_PathPosition: 8.44898
+  m_PathPosition: 0
   m_PositionUnits: 0
   m_PathOffset: {x: 0, y: 0, z: 0}
   m_XDamping: 0
@@ -6229,8 +6229,8 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 196620950}
-  m_LocalRotation: {x: -0.05823309, y: 0.930024, z: -0.16853893, w: -0.3213391}
-  m_LocalPosition: {x: -39.95599, y: 3.74, z: 100.5902}
+  m_LocalRotation: {x: 0.0000003967576, y: 0.9839734, z: -0.17831556, w: 0.0000021897833}
+  m_LocalPosition: {x: -35.440025, y: 3.95, z: 22.71}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 1445484893}
@@ -6318,7 +6318,7 @@ MonoBehaviour:
     ModeOverride: 0
     LensShift: {x: 0, y: 0}
     GateFit: 2
-    m_SensorSize: {x: 4.212742, y: 1}
+    m_SensorSize: {x: 4.891678, y: 1}
   m_Transitions:
     m_BlendHint: 0
     m_InheritPosition: 0
@@ -6582,9 +6582,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   spline: {fileID: 881659908}
   follower: {fileID: 0}
-  isExit: 1
   splineCamera: {fileID: 1781187230}
   optionalSplineCamera: {fileID: 0}
+  isExit: 1
+  toggleEnabled: 1
+  toggleTime: 3
+  isToggling: 0
+  isSwitched: 0
+  startPosition: 59
 --- !u!65 &213225176
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -6765,7 +6770,7 @@ MonoBehaviour:
     ModeOverride: 0
     LensShift: {x: 0, y: 0}
     GateFit: 2
-    m_SensorSize: {x: 4.212742, y: 1}
+    m_SensorSize: {x: 4.891678, y: 1}
   m_Transitions:
     m_BlendHint: 0
     m_InheritPosition: 0
@@ -7453,7 +7458,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 294236576}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -20.824728, y: -13.095522, z: -18.301605}
+  m_LocalPosition: {x: -20.824728, y: -13.095522, z: -17.469}
   m_LocalScale: {x: 3.7932208, y: 0.21815063, z: 0.16318543}
   m_Children: []
   m_Father: {fileID: 923295965}
@@ -7473,9 +7478,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   spline: {fileID: 565998727}
   follower: {fileID: 0}
-  isExit: 0
   splineCamera: {fileID: 1427911841}
   optionalSplineCamera: {fileID: 0}
+  isExit: 0
+  toggleEnabled: 1
+  toggleTime: 3
+  isToggling: 0
+  isSwitched: 0
+  startPosition: 1.5
 --- !u!1001 &308860520
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -10472,7 +10482,7 @@ MonoBehaviour:
     ModeOverride: 0
     LensShift: {x: 0, y: 0}
     GateFit: 2
-    m_SensorSize: {x: 4.212742, y: 1}
+    m_SensorSize: {x: 4.891678, y: 1}
   m_Transitions:
     m_BlendHint: 0
     m_InheritPosition: 0
@@ -10489,7 +10499,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 368524073}
   m_LocalRotation: {x: -0.023629405, y: -0.7042079, z: -0.023454562, w: 0.7092128}
-  m_LocalPosition: {x: -13.282728, y: -5.5205216, z: 54.032383}
+  m_LocalPosition: {x: -13.282728, y: -5.5205216, z: 3.9301643}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 1113515352}
@@ -14772,7 +14782,7 @@ MonoBehaviour:
     ModeOverride: 0
     LensShift: {x: 0, y: 0}
     GateFit: 2
-    m_SensorSize: {x: 4.212742, y: 1}
+    m_SensorSize: {x: 4.891678, y: 1}
   m_Transitions:
     m_BlendHint: 0
     m_InheritPosition: 0
@@ -15709,7 +15719,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Path: {fileID: 1519242223}
-  m_PathPosition: 0.85673213
+  m_PathPosition: 0
   m_PositionUnits: 0
   m_PathOffset: {x: 2.2700005, y: -6.330003, z: 0.15999985}
   m_XDamping: 0
@@ -28961,7 +28971,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Path: {fileID: 349636206}
-  m_PathPosition: 0.92216074
+  m_PathPosition: 0
   m_PositionUnits: 0
   m_PathOffset: {x: 0, y: 0, z: 0}
   m_XDamping: 0
@@ -31522,9 +31532,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   spline: {fileID: 1096244226}
   follower: {fileID: 0}
-  isExit: 0
   splineCamera: {fileID: 368524074}
   optionalSplineCamera: {fileID: 0}
+  isExit: 0
+  toggleEnabled: 1
+  toggleTime: 3
+  isToggling: 0
+  isSwitched: 0
+  startPosition: 1.5
 --- !u!65 &1197477865
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -33268,6 +33283,7 @@ MonoBehaviour:
   hasDoubleJumped: 0
   landedJump: 0
   triggerHeld: 0
+  splineSpeed: 10
   onSpline: 0
   jumpedOnSpline: 0
   pathDistanceTravelled: 0
@@ -33313,13 +33329,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   currentPath: {fileID: 0}
   previousPath: {fileID: 0}
-  endOfPathInstruction: 0
+  endOfPathInstruction: 2
   speed: 5
   distanceTravelled: 0
   onSpline: 0
   splineSceneActive: 0
   splineStarted: 0
   marioAutoRunStyle: 0
+  marioSwitchedDirection: 0
 --- !u!1 &1349701443
 GameObject:
   m_ObjectHideFlags: 3
@@ -33958,7 +33975,7 @@ MonoBehaviour:
     ModeOverride: 0
     LensShift: {x: 0, y: 0}
     GateFit: 2
-    m_SensorSize: {x: 4.212742, y: 1}
+    m_SensorSize: {x: 4.891678, y: 1}
   m_Transitions:
     m_BlendHint: 0
     m_InheritPosition: 0
@@ -33975,7 +33992,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1427911840}
   m_LocalRotation: {x: 0.0047959965, y: -0.71190333, z: 0.0048619625, w: 0.70224434}
-  m_LocalPosition: {x: -10.1, y: -11.650522, z: 54.19238}
+  m_LocalPosition: {x: -10.1, y: -11.650522, z: -24.863628}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 591732594}
@@ -34199,7 +34216,7 @@ MonoBehaviour:
     ModeOverride: 0
     LensShift: {x: 0, y: 0}
     GateFit: 2
-    m_SensorSize: {x: 4.212742, y: 1}
+    m_SensorSize: {x: 4.891678, y: 1}
   m_Transitions:
     m_BlendHint: 0
     m_InheritPosition: 0
@@ -34215,7 +34232,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1445484891}
-  m_LocalRotation: {x: 0.018120296, y: -0.00000008940697, z: 0.000000048428774, w: 0.99983585}
+  m_LocalRotation: {x: 0.018120244, y: -0.00000005683023, z: 0.000000022558623, w: 0.9998359}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
@@ -34478,9 +34495,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   spline: {fileID: 565998727}
   follower: {fileID: 0}
-  isExit: 1
   splineCamera: {fileID: 1427911841}
   optionalSplineCamera: {fileID: 0}
+  isExit: 1
+  toggleEnabled: 1
+  toggleTime: 3
+  isToggling: 0
+  isSwitched: 0
+  startPosition: 76
 --- !u!65 &1459222794
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -34953,7 +34975,7 @@ MonoBehaviour:
     ModeOverride: 0
     LensShift: {x: 0, y: 0}
     GateFit: 2
-    m_SensorSize: {x: 4.212742, y: 1}
+    m_SensorSize: {x: 4.891678, y: 1}
   m_Transitions:
     m_BlendHint: 0
     m_InheritPosition: 0
@@ -34969,7 +34991,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1469480415}
-  m_LocalRotation: {x: 0.000000027939674, y: 0.000000059604638, z: -0.0000000037252899, w: 1}
+  m_LocalRotation: {x: -0.000000014901161, y: 2.0941116e-10, z: -2.842171e-14, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
@@ -35382,15 +35404,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 532e96ec12493fa4b84bf541bab6bfec, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -43.66
+      value: -35.44
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 532e96ec12493fa4b84bf541bab6bfec, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0.26
+      value: -0.05
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 532e96ec12493fa4b84bf541bab6bfec, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 95.87
+      value: 16.71
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 532e96ec12493fa4b84bf541bab6bfec, type: 3}
       propertyPath: m_LocalRotation.w
@@ -41080,7 +41102,7 @@ MonoBehaviour:
     ModeOverride: 0
     LensShift: {x: 0, y: 0}
     GateFit: 2
-    m_SensorSize: {x: 4.212742, y: 1}
+    m_SensorSize: {x: 4.891678, y: 1}
   m_Transitions:
     m_BlendHint: 0
     m_InheritPosition: 0
@@ -41096,7 +41118,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1699786545}
-  m_LocalRotation: {x: -0.01805674, y: 0.000000029802322, z: 0.0000000037252903, w: 0.999837}
+  m_LocalRotation: {x: -0.018056795, y: 2.0963853e-10, z: 3.7516656e-12, w: 0.99983704}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
@@ -44377,7 +44399,7 @@ MonoBehaviour:
     ModeOverride: 0
     LensShift: {x: 0, y: 0}
     GateFit: 2
-    m_SensorSize: {x: 4.212742, y: 1}
+    m_SensorSize: {x: 4.891678, y: 1}
   m_Transitions:
     m_BlendHint: 0
     m_InheritPosition: 0
@@ -44393,8 +44415,8 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1781187229}
-  m_LocalRotation: {x: -0.031638026, y: 0.8694116, z: 0.05615089, w: 0.48986697}
-  m_LocalPosition: {x: -46.93592, y: -14.272904, z: 65.08119}
+  m_LocalRotation: {x: -0.00014713556, y: 0.9974749, z: -0.0020673801, w: -0.07099034}
+  m_LocalPosition: {x: -8.195559, y: -10.937143, z: 60.694866}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 192220846}
@@ -45797,9 +45819,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   spline: {fileID: 881659908}
   follower: {fileID: 0}
-  isExit: 0
   splineCamera: {fileID: 1781187230}
   optionalSplineCamera: {fileID: 0}
+  isExit: 0
+  toggleEnabled: 1
+  toggleTime: 3
+  isToggling: 0
+  isSwitched: 0
+  startPosition: 1.5
 --- !u!65 &1892045721
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -49531,9 +49558,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   spline: {fileID: 1096244226}
   follower: {fileID: 0}
-  isExit: 1
   splineCamera: {fileID: 368524074}
   optionalSplineCamera: {fileID: 1427911841}
+  isExit: 1
+  toggleEnabled: 1
+  toggleTime: 3
+  isToggling: 0
+  isSwitched: 0
+  startPosition: 1.5
 --- !u!65 &2019530642
 BoxCollider:
   m_ObjectHideFlags: 0
