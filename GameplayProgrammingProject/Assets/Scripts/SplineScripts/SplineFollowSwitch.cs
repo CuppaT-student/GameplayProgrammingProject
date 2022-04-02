@@ -9,19 +9,25 @@ public class SplineFollowSwitch : MonoBehaviour
 
     public PathCreator spline;
     public SplineFollower follower;
-    public bool isExit;
     public CinemachineVirtualCamera splineCamera;
     public CinemachineVirtualCamera optionalSplineCamera;
-    public bool coroutine_running = false;
+    public bool isExit;
+    public bool toggleEnabled = true;
+    public float toggleTime = 3f;
+    public bool isToggling = false;
+    public bool isSwitched = false;
     public float startPosition = 1.5f;
 
 
     private void OnTriggerExit(Collider other)
     {
-        if (!coroutine_running)
+        if (toggleEnabled)
         {
-            StartCoroutine(ToggleSwitchType(3));
-            coroutine_running = true;
+            if (!isToggling)
+            {
+                StartCoroutine(ToggleSwitchType(toggleTime));
+                isToggling = true;
+            }
         }
     }
     private void OnTriggerEnter(Collider other)
@@ -29,6 +35,17 @@ public class SplineFollowSwitch : MonoBehaviour
         if (other.CompareTag("Player"))
         {
             follower = other.GetComponent<SplineFollower>();
+            if (follower.marioAutoRunStyle)
+            {
+                if (isSwitched)
+                {
+                    follower.marioSwitchedDirection = true;
+                }
+                else
+                {
+                    follower.marioSwitchedDirection = false;
+                }
+            }
             if (!isExit)
             {
                 /*if(follower.splineSceneActive)
@@ -67,7 +84,9 @@ public class SplineFollowSwitch : MonoBehaviour
         yield return new WaitForSeconds(time);
         Debug.Log("Toggling Spline Switch Type!");
         isExit = !isExit;
-        coroutine_running = false;
+        isSwitched = !isSwitched;
+        isToggling = false;
+
     }
 
 }

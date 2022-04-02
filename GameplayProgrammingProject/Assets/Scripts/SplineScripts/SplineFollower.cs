@@ -16,6 +16,7 @@ public class SplineFollower : MonoBehaviour
     public bool splineStarted = false;
 
     public bool marioAutoRunStyle = true;
+    public bool marioSwitchedDirection = false;
 
     private Rigidbody rb;
 
@@ -40,7 +41,15 @@ public class SplineFollower : MonoBehaviour
             if (marioAutoRunStyle)
             {
                 onSpline = true;
-                distanceTravelled += speed * Time.deltaTime;
+                if (marioSwitchedDirection)
+                {
+                    distanceTravelled -= speed * Time.deltaTime;
+                }
+                else
+                {
+                    distanceTravelled += speed * Time.deltaTime;
+                }
+
                 transform.position = currentPath.path.GetPointAtDistance(distanceTravelled, endOfPathInstruction);
                 transform.rotation = currentPath.path.GetRotationAtDistance(distanceTravelled, endOfPathInstruction);
             }
