@@ -15,21 +15,34 @@ public class TestingInputSystem : MonoBehaviour
     private Animator animator;
 
     // create movement fields
-    //[SerializeField] public float speed = 2F;
-    private bool isSprinting = false;
 
     [Header("Required Components")]
     [SerializeField] Camera playerCamera;
 
     [Header("Move Forces")]
-    //[SerializeField] public float moveForce = 1f;
     [SerializeField] public float walkForce = 1f;
     [SerializeField] public float runForce = 3f;
-    private float sprintForce = 2.0F;
     [SerializeField] public float maxSpeed = 3.0f;
     public Vector3 forceDirection = Vector3.zero;
     public float moveAmount;
 
+    // Stance stuff - 01-04-22
+    public enum CharacterStance { Standing, Crouched, Prone }
+    private CharacterStance _stance;
+    [SerializeField] private Vector2 _standingSpeed = new Vector2(0, 0);
+    [SerializeField] private Vector2 _crouchedSpeed = new Vector2(0, 0);
+    [SerializeField] private Vector2 _proneSpeed = new Vector2(0, 0);
+
+    [Header("Capsule Variables")]
+    [SerializeField] private Vector3 _standingCapsule = Vector3.zero;
+    [SerializeField] private Vector3 _crouchedCapsule = Vector3.zero;
+    [SerializeField] private Vector3 _proneCapsule = Vector3.zero;
+
+    private CapsuleCollider _collider;
+
+    private float _walkSpeed;
+    private float _runSpeed;
+    private LayerMask _layerMask;
 
 
     [Header("Jump Values")]
@@ -49,6 +62,18 @@ public class TestingInputSystem : MonoBehaviour
     public float pathDistanceTravelled = 0;
 
 
+    private void Start()
+    {
+        int _mask = 0;
+        for (int i = 0; i < 32; i++)
+        {
+            if (!(Physics.GetIgnoreLayerCollision(gameObject.layer, i)))
+            {
+                _mask |= 1 << i;
+            }
+        }
+        _layerMask = _mask;
+    }
 
     private void Awake()
     {
@@ -63,8 +88,15 @@ public class TestingInputSystem : MonoBehaviour
         playerInputActions.ThirdPersonPlayer.Trigger.canceled += DoTrigger;
 
         follower = this.GetComponent<SplineFollower>();
+        _collider = this.GetComponent<CapsuleCollider>();
 
+        _walkSpeed = _standingSpeed.x;
+        _runSpeed = _standingSpeed.y;
+        _stance = CharacterStance.Standing;
     }
+
+
+
 
     private void OnEnable()
     {
@@ -73,6 +105,9 @@ public class TestingInputSystem : MonoBehaviour
         moveAction = playerInputActions.ThirdPersonPlayer.Movement;
         playerInputActions.ThirdPersonPlayer.Trigger.performed += DoTrigger;
         playerInputActions.ThirdPersonPlayer.Trigger.canceled += DoTrigger;
+        playerInputActions.ThirdPersonPlayer.Stance.started += ChangeStance;
+        playerInputActions.ThirdPersonPlayer.Stance.performed += ChangeStance;
+        playerInputActions.ThirdPersonPlayer.Stance.canceled += ChangeStance;
         playerInputActions.ThirdPersonPlayer.Enable();
     }
 
@@ -82,11 +117,39 @@ public class TestingInputSystem : MonoBehaviour
         playerInputActions.ThirdPersonPlayer.Attack.started -= DoAttack;
         playerInputActions.ThirdPersonPlayer.Trigger.performed -= DoTrigger;
         playerInputActions.ThirdPersonPlayer.Trigger.canceled -= DoTrigger;
+        playerInputActions.ThirdPersonPlayer.Stance.started -= ChangeStance;
+        playerInputActions.ThirdPersonPlayer.Stance.performed -= ChangeStance;
+        playerInputActions.ThirdPersonPlayer.Stance.canceled -= ChangeStance;
 
         playerInputActions.ThirdPersonPlayer.Disable();
 
     }
 
+    /*    private void LateUpdate()
+        {
+            switch (_stance)
+            {
+                case CharacterStance.Standing:
+                    if (//something)
+                    {
+                        RequestStancechange(CharacterStance.Crouched);
+                    }
+                    break;
+                case CharacterStance.Crouched:
+                    if (//something)
+                    {
+
+                    }
+                    break;
+                case CharacterStance.Prone:
+                    if (//something)
+                    {
+
+                    }
+                    break;
+            }
+        }
+    */
 
     private void FixedUpdate()
     {
@@ -159,25 +222,18 @@ public class TestingInputSystem : MonoBehaviour
 
     private void Move()
     {
-        if (isSprinting && moveAmount >= 0.5F)
-        {
-            forceDirection += moveAction.ReadValue<Vector2>().x * GetCameraRight(playerCamera) * sprintForce;
-            forceDirection += moveAction.ReadValue<Vector2>().y * GetCameraForward(playerCamera) * sprintForce;
 
+        if (moveAmount >= 0.5F)
+        {
+            forceDirection += moveAction.ReadValue<Vector2>().x * GetCameraRight(playerCamera) * runForce;
+            forceDirection += moveAction.ReadValue<Vector2>().y * GetCameraForward(playerCamera) * runForce;
         }
         else
         {
-            if (moveAmount >= 0.5F)
-            {
-                forceDirection += moveAction.ReadValue<Vector2>().x * GetCameraRight(playerCamera) * runForce;
-                forceDirection += moveAction.ReadValue<Vector2>().y * GetCameraForward(playerCamera) * runForce;
-            }
-            else
-            {
-                forceDirection += moveAction.ReadValue<Vector2>().x * GetCameraRight(playerCamera) * walkForce;
-                forceDirection += moveAction.ReadValue<Vector2>().y * GetCameraForward(playerCamera) * walkForce;
-            }
+            forceDirection += moveAction.ReadValue<Vector2>().x * GetCameraRight(playerCamera) * walkForce;
+            forceDirection += moveAction.ReadValue<Vector2>().y * GetCameraForward(playerCamera) * walkForce;
         }
+
         //        capsuleRB.velocity = forceDirection * 2.5f;
         capsuleRB.AddForce(forceDirection, ForceMode.Impulse);
         forceDirection = Vector3.zero;
@@ -338,4 +394,33 @@ public class TestingInputSystem : MonoBehaviour
         triggerHeld = obj.ReadValueAsButton();
         Debug.Log("Trigger Pressed");
     }
+
+
+    private void ChangeStance(InputAction.CallbackContext obj)
+    {
+        Debug.Log($"Stance Event Phase {obj.phase}!");
+        switch (obj.phase)
+        {
+            // The button was pressed
+            case InputActionPhase.Started:
+                //Debug.Log("Started");
+                break;
+            // The Action has met all preformed conditions (Interactions -  i think)
+            case InputActionPhase.Performed:
+                Debug.Log($"Performed time : {obj.duration}");
+
+                ///TODO
+                // if duration => 1
+                // do longStance Change
+                // else 
+                // do shortStance change
+                break;
+
+            // The button was released
+            case InputActionPhase.Canceled:
+                //Debug.Log("Canceled");
+                break;
+        }
+    }
+
 }

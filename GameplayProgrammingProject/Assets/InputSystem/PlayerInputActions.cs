@@ -65,6 +65,14 @@ public class @PlayerInputActions : IInputActionCollection, IDisposable
                     ""expectedControlType"": ""Button"",
                     ""processors"": """",
                     ""interactions"": """"
+                },
+                {
+                    ""name"": ""Stance"",
+                    ""type"": ""PassThrough"",
+                    ""id"": ""5f443ecc-4d8f-484e-9de0-04636434d199"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": ""Hold(duration=1),Tap""
                 }
             ],
             ""bindings"": [
@@ -243,6 +251,28 @@ public class @PlayerInputActions : IInputActionCollection, IDisposable
                     ""action"": ""Trigger"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""366a177e-9030-4bfb-9890-ddf5c2e47b3f"",
+                    ""path"": ""<Gamepad>/buttonNorth"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Gamepad"",
+                    ""action"": ""Stance"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""891658f1-6a1c-4723-a95d-4501c63eef72"",
+                    ""path"": ""<Keyboard>/leftCtrl"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Keyboard"",
+                    ""action"": ""Stance"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -274,6 +304,7 @@ public class @PlayerInputActions : IInputActionCollection, IDisposable
         m_ThirdPersonPlayer_Look = m_ThirdPersonPlayer.FindAction("Look", throwIfNotFound: true);
         m_ThirdPersonPlayer_Sprint = m_ThirdPersonPlayer.FindAction("Sprint", throwIfNotFound: true);
         m_ThirdPersonPlayer_Trigger = m_ThirdPersonPlayer.FindAction("Trigger", throwIfNotFound: true);
+        m_ThirdPersonPlayer_Stance = m_ThirdPersonPlayer.FindAction("Stance", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -329,6 +360,7 @@ public class @PlayerInputActions : IInputActionCollection, IDisposable
     private readonly InputAction m_ThirdPersonPlayer_Look;
     private readonly InputAction m_ThirdPersonPlayer_Sprint;
     private readonly InputAction m_ThirdPersonPlayer_Trigger;
+    private readonly InputAction m_ThirdPersonPlayer_Stance;
     public struct ThirdPersonPlayerActions
     {
         private @PlayerInputActions m_Wrapper;
@@ -339,6 +371,7 @@ public class @PlayerInputActions : IInputActionCollection, IDisposable
         public InputAction @Look => m_Wrapper.m_ThirdPersonPlayer_Look;
         public InputAction @Sprint => m_Wrapper.m_ThirdPersonPlayer_Sprint;
         public InputAction @Trigger => m_Wrapper.m_ThirdPersonPlayer_Trigger;
+        public InputAction @Stance => m_Wrapper.m_ThirdPersonPlayer_Stance;
         public InputActionMap Get() { return m_Wrapper.m_ThirdPersonPlayer; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -366,6 +399,9 @@ public class @PlayerInputActions : IInputActionCollection, IDisposable
                 @Trigger.started -= m_Wrapper.m_ThirdPersonPlayerActionsCallbackInterface.OnTrigger;
                 @Trigger.performed -= m_Wrapper.m_ThirdPersonPlayerActionsCallbackInterface.OnTrigger;
                 @Trigger.canceled -= m_Wrapper.m_ThirdPersonPlayerActionsCallbackInterface.OnTrigger;
+                @Stance.started -= m_Wrapper.m_ThirdPersonPlayerActionsCallbackInterface.OnStance;
+                @Stance.performed -= m_Wrapper.m_ThirdPersonPlayerActionsCallbackInterface.OnStance;
+                @Stance.canceled -= m_Wrapper.m_ThirdPersonPlayerActionsCallbackInterface.OnStance;
             }
             m_Wrapper.m_ThirdPersonPlayerActionsCallbackInterface = instance;
             if (instance != null)
@@ -388,6 +424,9 @@ public class @PlayerInputActions : IInputActionCollection, IDisposable
                 @Trigger.started += instance.OnTrigger;
                 @Trigger.performed += instance.OnTrigger;
                 @Trigger.canceled += instance.OnTrigger;
+                @Stance.started += instance.OnStance;
+                @Stance.performed += instance.OnStance;
+                @Stance.canceled += instance.OnStance;
             }
         }
     }
@@ -418,5 +457,6 @@ public class @PlayerInputActions : IInputActionCollection, IDisposable
         void OnLook(InputAction.CallbackContext context);
         void OnSprint(InputAction.CallbackContext context);
         void OnTrigger(InputAction.CallbackContext context);
+        void OnStance(InputAction.CallbackContext context);
     }
 }

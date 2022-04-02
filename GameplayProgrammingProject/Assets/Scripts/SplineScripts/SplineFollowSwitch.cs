@@ -12,11 +12,17 @@ public class SplineFollowSwitch : MonoBehaviour
     public bool isExit;
     public CinemachineVirtualCamera splineCamera;
     public CinemachineVirtualCamera optionalSplineCamera;
+    public bool coroutine_running = false;
+    public float startPosition = 1.5f;
 
 
     private void OnTriggerExit(Collider other)
     {
-
+        if (!coroutine_running)
+        {
+            StartCoroutine(ToggleSwitchType(3));
+            coroutine_running = true;
+        }
     }
     private void OnTriggerEnter(Collider other)
     {
@@ -29,10 +35,15 @@ public class SplineFollowSwitch : MonoBehaviour
                 {
                     //get prev spline camera and reset its priority
                 }*/
-                follower.distanceTravelled = 0;
-                splineCamera.Priority = 11;
-                follower.currentPath = spline;
-                follower.splineSceneActive = true;
+                if (!follower.splineStarted)
+                {
+                    //follower.distanceTravelled = 0;
+                    splineCamera.Priority = 11;
+                    follower.currentPath = spline;
+                    follower.distanceTravelled = startPosition;
+                    follower.splineSceneActive = true;
+
+                }
             }
             else
             {
@@ -41,11 +52,22 @@ public class SplineFollowSwitch : MonoBehaviour
                 {
                     optionalSplineCamera.Priority = 9;
                 }
+                follower.splineStarted = false;
                 follower.currentPath = null;
                 follower.splineSceneActive = false;
+
             }
         }
     }
 
+
+
+    IEnumerator ToggleSwitchType(float time)
+    {
+        yield return new WaitForSeconds(time);
+        Debug.Log("Toggling Spline Switch Type!");
+        isExit = !isExit;
+        coroutine_running = false;
+    }
 
 }
