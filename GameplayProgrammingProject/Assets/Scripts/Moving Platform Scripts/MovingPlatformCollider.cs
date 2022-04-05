@@ -12,6 +12,7 @@ public class MovingPlatformCollider : MonoBehaviour
         if (other.tag == "Player")
         {
             other.transform.SetParent(this.transform);
+            other.GetComponent<TestingInputSystem>().onMovingPlatform = true;
         }
     }
 
@@ -20,6 +21,7 @@ public class MovingPlatformCollider : MonoBehaviour
         if (other.tag == "Player")
         {
             other.transform.SetParent(null);
+            other.GetComponent<TestingInputSystem>().onMovingPlatform = false;
 
         }
 

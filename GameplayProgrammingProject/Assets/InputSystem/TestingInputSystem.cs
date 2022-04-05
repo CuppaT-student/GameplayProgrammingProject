@@ -28,22 +28,33 @@ public class TestingInputSystem : MonoBehaviour
 
     // Stance stuff - 01-04-22
     public enum CharacterStance { Standing, Crouched, Prone }
-    private CharacterStance _stance;
+    public CharacterStance _stance;
     [SerializeField] private Vector2 _standingSpeed = new Vector2(0, 0);
     [SerializeField] private Vector2 _crouchedSpeed = new Vector2(0, 0);
     [SerializeField] private Vector2 _proneSpeed = new Vector2(0, 0);
 
-    [Header("Capsule Variables")]
+    [Header("Capsule Variables ( X = Radius, Y= Height, Z = YOffset")]
     [SerializeField] private Vector3 _standingCapsule = Vector3.zero;
     [SerializeField] private Vector3 _crouchedCapsule = Vector3.zero;
     [SerializeField] private Vector3 _proneCapsule = Vector3.zero;
 
-    private CapsuleCollider _collider;
+    public CapsuleCollider _collider;
+    public SphereCollider sphereCollider;
+    public Collider floorCollider;
+
+    private Collider[] _obstructions = new Collider[8]; // This 8 is an random number but it should be atleast 2, 1 for the player 1 for an obstruction
+    public Collider[] platformColliders;
 
     private float _walkSpeed;
     private float _runSpeed;
     private LayerMask _layerMask;
 
+    public bool fastStanceChange = false;
+    public bool longStanceChange = false;
+
+    // end of Stance stuff
+
+    public bool onMovingPlatform = false;
 
     [Header("Jump Values")]
     [SerializeField] private float jumpForce = 10.0F;
@@ -65,6 +76,17 @@ public class TestingInputSystem : MonoBehaviour
 
     private void Start()
     {
+        // Stance stuff
+
+
+        // Defaults
+        SetCapsuleDimensions(_standingCapsule);
+        _walkSpeed = _standingSpeed.x;
+        _runSpeed = _standingSpeed.y;
+        _stance = CharacterStance.Standing;
+
+        // iterate through the max number of unity layers (32) and check if the layer is ignored
+        // if the mask is not ignored then flag that layer
         int _mask = 0;
         for (int i = 0; i < 32; i++)
         {
@@ -74,6 +96,9 @@ public class TestingInputSystem : MonoBehaviour
             }
         }
         _layerMask = _mask;
+
+
+        // end of Stance stuff
     }
 
     private void Awake()
@@ -90,10 +115,9 @@ public class TestingInputSystem : MonoBehaviour
 
         follower = this.GetComponent<SplineFollower>();
         _collider = this.GetComponent<CapsuleCollider>();
+        sphereCollider = this.GetComponent<SphereCollider>();
 
-        _walkSpeed = _standingSpeed.x;
-        _runSpeed = _standingSpeed.y;
-        _stance = CharacterStance.Standing;
+
     }
 
 
@@ -110,6 +134,7 @@ public class TestingInputSystem : MonoBehaviour
         playerInputActions.ThirdPersonPlayer.Stance.performed += ChangeStance;
         playerInputActions.ThirdPersonPlayer.Stance.canceled += ChangeStance;
         playerInputActions.ThirdPersonPlayer.Enable();
+
     }
 
     private void onDisable()
@@ -126,31 +151,34 @@ public class TestingInputSystem : MonoBehaviour
 
     }
 
-    /*    private void LateUpdate()
-        {
-            switch (_stance)
-            {
-                case CharacterStance.Standing:
-                    if (//something)
-                    {
-                        RequestStancechange(CharacterStance.Crouched);
-                    }
-                    break;
-                case CharacterStance.Crouched:
-                    if (//something)
-                    {
 
-                    }
-                    break;
-                case CharacterStance.Prone:
-                    if (//something)
+    private void LateUpdate()
+    {
+        // MovingPlatform Colliders for stance change code attempt
+        /*        if (onMovingPlatform)
+                {
+                    if (platformColliders.Length == 0)
                     {
+                        int i = 0;
+                        foreach (Collider collider in this.GetComponentsInParent<Collider>())
+                        {
 
+                            platformColliders[i] = collider;
+                            i++;
+                        }
                     }
-                    break;
-            }
-        }
-    */
+                }
+                else if (!onMovingPlatform)
+                {
+                    if (platformColliders.Length != 0)
+                    {
+                        for (int i = 0; i < platformColliders.Length; i++)
+                        {
+                            platformColliders[i] = null;
+                        }
+                    }
+                }*/
+    }
 
     private void FixedUpdate()
     {
@@ -343,7 +371,7 @@ public class TestingInputSystem : MonoBehaviour
 
         if (Physics.Raycast(ray, out RaycastHit hit, 0.5f))
         {
-            Debug.Log("IS GROUNDED!");
+
             if (hasJumped)
             {
 
@@ -354,7 +382,8 @@ public class TestingInputSystem : MonoBehaviour
                 landedJump = true;
                 hasJumped = false;
             }
-
+            floorCollider = hit.collider;
+            Debug.Log("IS GROUNDED!");
             return true;
         }
         else
@@ -399,29 +428,246 @@ public class TestingInputSystem : MonoBehaviour
 
     private void ChangeStance(InputAction.CallbackContext obj)
     {
-        Debug.Log($"Stance Event Phase {obj.phase}!");
-        switch (obj.phase)
+
+        if (obj.performed)
         {
-            // The button was pressed
-            case InputActionPhase.Started:
-                //Debug.Log("Started");
-                break;
-            // The Action has met all preformed conditions (Interactions -  i think)
-            case InputActionPhase.Performed:
-                Debug.Log($"Performed time : {obj.duration}");
+            switch (_stance)
+            {
+                case CharacterStance.Standing:
+                    if (obj.duration >= 1)
+                    {
+                        // standing + long press = prone
+                        // do stance change
+                        // set reset stance change bools to false once complete
+                        RequestStanceChange(CharacterStance.Prone);
+                    }
+                    else
+                    {
+                        // standing + fast press = crouched
+                        // do stance change
+                        // set reset stance change bools to false once complete
+                        RequestStanceChange(CharacterStance.Crouched);
+                    }
+                    break;
+                case CharacterStance.Crouched:
+                    if (obj.duration >= 1)
+                    {
+                        // crouched + long = prone
+                        // do stance change
+                        // set reset stance change bools to false once complete
+                        RequestStanceChange(CharacterStance.Prone);
+                    }
+                    else
+                    {
+                        // crouched + fast = standing
+                        // do stance change
+                        // set reset stance change bools to false once complete
+                        RequestStanceChange(CharacterStance.Standing);
+                    }
+                    break;
+                case CharacterStance.Prone:
+                    if (obj.duration >= 1)
+                    {
+                        // prone + long = standing
+                        // do stance change
+                        // set reset stance change bools to false once complete
+                        RequestStanceChange(CharacterStance.Standing);
+                    }
+                    else
+                    {
+                        // prone + fast = crouched
+                        // do stance change
+                        // set reset stance change bools to false once complete
+                        RequestStanceChange(CharacterStance.Crouched);
+                    }
+                    break;
+            }
+        }
+    }
 
-                ///TODO
-                // if duration => 1
-                // do longStance Change
-                // else 
-                // do shortStance change
-                break;
 
-            // The button was released
-            case InputActionPhase.Canceled:
-                //Debug.Log("Canceled");
+
+
+    public bool RequestStanceChange(CharacterStance newStance)
+    {
+        if (_stance == newStance)
+        {
+            Debug.Log("Stance = " + _stance);
+            return true;
+        }
+        switch (_stance)
+        {
+            case CharacterStance.Standing:
+                if (newStance == CharacterStance.Crouched)
+                {
+                    if (!CharacterOverlap(_crouchedCapsule))
+                    {
+                        _walkSpeed = _crouchedSpeed.x;
+                        _runSpeed = _crouchedSpeed.y;
+                        _stance = newStance;
+                        SetCapsuleDimensions(_crouchedCapsule);
+                        Debug.Log("Stance changed = " + _stance);
+                        return true;
+                    }
+                }
+                else if (newStance == CharacterStance.Prone)
+                {
+                    if (!CharacterOverlap(_proneCapsule))
+                    {
+                        _walkSpeed = _proneSpeed.x;
+                        _runSpeed = _proneSpeed.y;
+                        _stance = newStance;
+                        SetCapsuleDimensions(_proneCapsule);
+                        Debug.Log("Stance changed = " + _stance);
+                        return true;
+                    }
+                }
+                break;
+            case CharacterStance.Crouched:
+                if (newStance == CharacterStance.Standing)
+                {
+                    if (!CharacterOverlap(_standingCapsule))
+                    {
+                        _walkSpeed = _standingSpeed.x;
+                        _runSpeed = _standingSpeed.y;
+                        _stance = newStance;
+                        SetCapsuleDimensions(_standingCapsule);
+                        Debug.Log("Stance changed = " + _stance);
+                        return true;
+                    }
+                }
+                else if (newStance == CharacterStance.Prone)
+                {
+                    if (!CharacterOverlap(_proneCapsule))
+                    {
+                        _walkSpeed = _proneSpeed.x;
+                        _runSpeed = _proneSpeed.y;
+                        _stance = newStance;
+                        SetCapsuleDimensions(_proneCapsule);
+                        Debug.Log("Stance changed = " + _stance);
+                        return true;
+                    }
+                }
+                break;
+            case CharacterStance.Prone:
+                if (newStance == CharacterStance.Standing)
+                {
+                    if (!CharacterOverlap(_standingCapsule))
+                    {
+                        _walkSpeed = _standingSpeed.x;
+                        _runSpeed = _standingSpeed.y;
+                        _stance = newStance;
+                        SetCapsuleDimensions(_standingCapsule);
+                        Debug.Log("Stance changed = " + _stance);
+                        return true;
+                    }
+                }
+                else if (newStance == CharacterStance.Crouched)
+                {
+                    if (!CharacterOverlap(_crouchedCapsule))
+                    {
+                        _walkSpeed = _crouchedSpeed.x;
+                        _runSpeed = _crouchedSpeed.y;
+                        _stance = newStance;
+                        SetCapsuleDimensions(_crouchedCapsule);
+                        return true;
+                    }
+                }
                 break;
         }
+        return false;
+    }
+
+    // This function checks if there is enough space when you want to change the capsule colliders size,
+    // it takes a Vector 3 that represents a Capsules desired Dimensions and checks if it overlaps with any flagged masks
+    private bool CharacterOverlap(Vector3 dimensions)
+    {
+
+        //Check to see if grounded to ensure ground collider is referenced
+        IsGrounded();
+        Debug.Log("Checking CharacterOverlap");
+        float _radius = dimensions.x;
+        float _height = dimensions.y;
+        // the center is the centre of the current capsule minus the offset of the capsule being passed in
+        Vector3 _centre = new Vector3(_collider.center.x, dimensions.z, _collider.center.z);
+
+        Vector3 _point0;
+        Vector3 _point1;
+
+        if (_height < _radius * 2)
+        {
+            _point0 = transform.position + _centre;
+            _point1 = transform.position - _centre;
+
+        }
+        else
+        {
+            _point0 = transform.position + _centre + (transform.up * (_height * 0.5f - _radius));
+            _point1 = transform.position + _centre - (transform.up * (_height * 0.5f - _radius));
+
+        }
+
+        // Use this Physics Overlap Non-allocating function to determine the amount of overlaps found in the capsule
+        // It takes, point 0 & 1 (representing the two ends of the capsule), the radius, a buffer to store the detected overlaps and a layer mask 
+        int _numOverlaps = Physics.OverlapCapsuleNonAlloc(_point0, _point1, _radius, _obstructions, _layerMask);
+
+        Debug.Log("Begin Loop - Number of CharacterOverlaps = " + _numOverlaps);
+        for (int i = 0; i < _numOverlaps + 1; i++) // +1 to numOverlaps to ensure when we subtract 1 we stil check the last overlap and remove if needed
+        {
+            Debug.Log("Name = " + _obstructions[i].name);
+            Debug.Log("Type = " + _obstructions[i].GetType());
+            if (_obstructions[i] == _collider || _obstructions[i] == sphereCollider || _obstructions[i] == capsuleRB || _obstructions[i] == floorCollider)
+            {
+                _numOverlaps--;
+                Debug.Log("Removing Overlap");
+                Debug.Log(_obstructions[i]);
+                Debug.Log("Name = " + _obstructions[i].name);
+                Debug.Log("Type = " + _obstructions[i].GetType());
+                Debug.Log("Layer = " + _obstructions[i].gameObject.layer);
+
+                Debug.Log("Removed Overlap = " + _obstructions[i].name + ", Number of CharacterOverlaps = " + _numOverlaps);
+
+            }
+        }
+        if (onMovingPlatform)
+        {
+            foreach (BoxCollider collider in this.GetComponentsInParent<BoxCollider>())
+            {
+                for (int j = 0; j < _numOverlaps; j++)
+                {
+                    _numOverlaps--;
+                }
+            }
+        }
+
+        Debug.Log("End Number of CharacterOverlaps = " + _numOverlaps);
+
+        if (_numOverlaps != 0)
+        {
+            for (int i = 0; i < _numOverlaps; i++)
+            {
+                Debug.Log(_obstructions[i]);
+                Debug.Log("Name = " + _obstructions[i].name);
+                Debug.Log("Type = " + _obstructions[i].GetType());
+                Debug.Log("Layer = " + _obstructions[i].gameObject.layer);
+
+
+            }
+
+        }
+
+        Debug.Log("End of CharacterOverlap");
+        return _numOverlaps > 0;
+
+    }
+
+    private void SetCapsuleDimensions(Vector3 newDimensions)
+    {
+        Debug.Log("Setting Capsule Dimensions");
+        _collider.center = new Vector3(_collider.center.x, newDimensions.z, _collider.center.z);
+        _collider.radius = newDimensions.x;
+        _collider.height = newDimensions.y;
+        Debug.Log("Capsule Dimensions Set!");
     }
 
 }
