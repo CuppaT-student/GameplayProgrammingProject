@@ -22,16 +22,20 @@ public class TestingInputSystem : MonoBehaviour
     [Header("Move Forces")]
     [SerializeField] public float walkForce = 1f;
     [SerializeField] public float runForce = 3f;
-    [SerializeField] public float maxSpeed = 3.0f;
+    [SerializeField] public float maxSpeed = 4.0f;
     public Vector3 forceDirection = Vector3.zero;
     public float moveAmount;
 
     // Stance stuff - 01-04-22
     public enum CharacterStance { Standing, Crouched, Prone }
     public CharacterStance _stance;
-    [SerializeField] private Vector2 _standingSpeed = new Vector2(0, 0);
-    [SerializeField] private Vector2 _crouchedSpeed = new Vector2(0, 0);
-    [SerializeField] private Vector2 _proneSpeed = new Vector2(0, 0);
+
+    [Header("Standing Forces |      X: walk force, Y: run force, Z: MaxSpeed")]
+    [SerializeField] private Vector3 _standingSpeed = new Vector3(0, 0, 0);
+    [Header("Crouched Forces |      X: walk force, Y: run force, Z: MaxSpeed")]
+    [SerializeField] private Vector3 _crouchedSpeed = new Vector3(0, 0, 0);
+    [Header("Prone Forces |         X: walk force, Y: run force, Z: MaxSpeed")]
+    [SerializeField] private Vector3 _proneSpeed = new Vector3(0, 0, 0);
 
     [Header("Capsule Variables ( X = Radius, Y= Height, Z = YOffset")]
     [SerializeField] private Vector3 _standingCapsule = Vector3.zero;
@@ -49,8 +53,14 @@ public class TestingInputSystem : MonoBehaviour
     private float _runSpeed;
     private LayerMask _layerMask;
 
-    public bool fastStanceChange = false;
-    public bool longStanceChange = false;
+    // Stance State Names
+    private const string _standToProne = "Base Layer.Stand to Prone";
+    private const string _standToCrouch = "Base Layer.Base Crouching";
+    private const string _crouchToProne = "Base Layer.Crouch to Prone";
+    private const string _crouchToStand = "Base Layer.Base Standing";
+    private const string _proneToStand = "Base Layer.Prone to Stand";
+    private const string _proneToCrouch = "Base Layer.Prone to Crouch";
+
 
     // end of Stance stuff
 
@@ -81,8 +91,9 @@ public class TestingInputSystem : MonoBehaviour
 
         // Defaults
         SetCapsuleDimensions(_standingCapsule);
-        _walkSpeed = _standingSpeed.x;
-        _runSpeed = _standingSpeed.y;
+        walkForce = _standingSpeed.x;
+        runForce = _standingSpeed.y;
+        maxSpeed = _standingSpeed.z;
         _stance = CharacterStance.Standing;
 
         // iterate through the max number of unity layers (32) and check if the layer is ignored
@@ -437,15 +448,11 @@ public class TestingInputSystem : MonoBehaviour
                     if (obj.duration >= 1)
                     {
                         // standing + long press = prone
-                        // do stance change
-                        // set reset stance change bools to false once complete
                         RequestStanceChange(CharacterStance.Prone);
                     }
                     else
                     {
                         // standing + fast press = crouched
-                        // do stance change
-                        // set reset stance change bools to false once complete
                         RequestStanceChange(CharacterStance.Crouched);
                     }
                     break;
@@ -453,15 +460,11 @@ public class TestingInputSystem : MonoBehaviour
                     if (obj.duration >= 1)
                     {
                         // crouched + long = prone
-                        // do stance change
-                        // set reset stance change bools to false once complete
                         RequestStanceChange(CharacterStance.Prone);
                     }
                     else
                     {
                         // crouched + fast = standing
-                        // do stance change
-                        // set reset stance change bools to false once complete
                         RequestStanceChange(CharacterStance.Standing);
                     }
                     break;
@@ -469,15 +472,11 @@ public class TestingInputSystem : MonoBehaviour
                     if (obj.duration >= 1)
                     {
                         // prone + long = standing
-                        // do stance change
-                        // set reset stance change bools to false once complete
                         RequestStanceChange(CharacterStance.Standing);
                     }
                     else
                     {
                         // prone + fast = crouched
-                        // do stance change
-                        // set reset stance change bools to false once complete
                         RequestStanceChange(CharacterStance.Crouched);
                     }
                     break;
@@ -502,10 +501,13 @@ public class TestingInputSystem : MonoBehaviour
                 {
                     if (!CharacterOverlap(_crouchedCapsule))
                     {
-                        _walkSpeed = _crouchedSpeed.x;
-                        _runSpeed = _crouchedSpeed.y;
+                        walkForce = _crouchedSpeed.x;
+                        runForce = _crouchedSpeed.y;
+                        maxSpeed = _crouchedSpeed.z;
                         _stance = newStance;
+                        animator.CrossFadeInFixedTime(_standToCrouch, 0.25F);
                         SetCapsuleDimensions(_crouchedCapsule);
+                        sphereCollider.enabled = false;
                         Debug.Log("Stance changed = " + _stance);
                         return true;
                     }
@@ -514,10 +516,13 @@ public class TestingInputSystem : MonoBehaviour
                 {
                     if (!CharacterOverlap(_proneCapsule))
                     {
-                        _walkSpeed = _proneSpeed.x;
-                        _runSpeed = _proneSpeed.y;
+                        walkForce = _proneSpeed.x;
+                        runForce = _proneSpeed.y;
+                        maxSpeed = _proneSpeed.z;
                         _stance = newStance;
+                        animator.CrossFadeInFixedTime(_standToProne, 0.5F);
                         SetCapsuleDimensions(_proneCapsule);
+                        sphereCollider.enabled = false;
                         Debug.Log("Stance changed = " + _stance);
                         return true;
                     }
@@ -528,10 +533,13 @@ public class TestingInputSystem : MonoBehaviour
                 {
                     if (!CharacterOverlap(_standingCapsule))
                     {
-                        _walkSpeed = _standingSpeed.x;
-                        _runSpeed = _standingSpeed.y;
+                        walkForce = _standingSpeed.x;
+                        runForce = _standingSpeed.y;
+                        maxSpeed = _standingSpeed.z;
                         _stance = newStance;
+                        animator.CrossFadeInFixedTime(_crouchToStand, 0.25F);
                         SetCapsuleDimensions(_standingCapsule);
+                        sphereCollider.enabled = true;
                         Debug.Log("Stance changed = " + _stance);
                         return true;
                     }
@@ -540,9 +548,11 @@ public class TestingInputSystem : MonoBehaviour
                 {
                     if (!CharacterOverlap(_proneCapsule))
                     {
-                        _walkSpeed = _proneSpeed.x;
-                        _runSpeed = _proneSpeed.y;
+                        walkForce = _proneSpeed.x;
+                        runForce = _proneSpeed.y;
+                        maxSpeed = _proneSpeed.z;
                         _stance = newStance;
+                        animator.CrossFadeInFixedTime(_crouchToProne, 0.25F);
                         SetCapsuleDimensions(_proneCapsule);
                         Debug.Log("Stance changed = " + _stance);
                         return true;
@@ -554,10 +564,13 @@ public class TestingInputSystem : MonoBehaviour
                 {
                     if (!CharacterOverlap(_standingCapsule))
                     {
-                        _walkSpeed = _standingSpeed.x;
-                        _runSpeed = _standingSpeed.y;
+                        walkForce = _standingSpeed.x;
+                        runForce = _standingSpeed.y;
+                        maxSpeed = _standingSpeed.z;
                         _stance = newStance;
+                        animator.CrossFadeInFixedTime(_proneToStand, 0.5F);
                         SetCapsuleDimensions(_standingCapsule);
+                        sphereCollider.enabled = true;
                         Debug.Log("Stance changed = " + _stance);
                         return true;
                     }
@@ -566,9 +579,11 @@ public class TestingInputSystem : MonoBehaviour
                 {
                     if (!CharacterOverlap(_crouchedCapsule))
                     {
-                        _walkSpeed = _crouchedSpeed.x;
-                        _runSpeed = _crouchedSpeed.y;
+                        walkForce = _crouchedSpeed.x;
+                        runForce = _crouchedSpeed.y;
+                        maxSpeed = _crouchedSpeed.z;
                         _stance = newStance;
+                        animator.CrossFadeInFixedTime(_proneToCrouch, 0.25F);
                         SetCapsuleDimensions(_crouchedCapsule);
                         return true;
                     }
@@ -614,34 +629,36 @@ public class TestingInputSystem : MonoBehaviour
         Debug.Log("Begin Loop - Number of CharacterOverlaps = " + _numOverlaps);
         for (int i = 0; i < _numOverlaps + 1; i++) // +1 to numOverlaps to ensure when we subtract 1 we stil check the last overlap and remove if needed
         {
-            Debug.Log("Name = " + _obstructions[i].name);
-            Debug.Log("Type = " + _obstructions[i].GetType());
+            Debug.Log("Checking Overlap = " + _obstructions[i].name + ", Number of CharacterOverlaps = " + _numOverlaps);
             if (_obstructions[i] == _collider || _obstructions[i] == sphereCollider || _obstructions[i] == capsuleRB || _obstructions[i] == floorCollider)
             {
+                Debug.Log("Removing Overlap = " + _obstructions[i].name + ", Number of CharacterOverlaps = " + _numOverlaps);
+                Debug.Log("Name = " + _obstructions[i].name + " | Type = " + _obstructions[i].GetType() + " | Layer = " + _obstructions[i].gameObject.layer);
                 _numOverlaps--;
-                Debug.Log("Removing Overlap");
-                Debug.Log(_obstructions[i]);
-                Debug.Log("Name = " + _obstructions[i].name);
-                Debug.Log("Type = " + _obstructions[i].GetType());
-                Debug.Log("Layer = " + _obstructions[i].gameObject.layer);
-
+                i = 0;
                 Debug.Log("Removed Overlap = " + _obstructions[i].name + ", Number of CharacterOverlaps = " + _numOverlaps);
 
             }
         }
+
+        // Handle moving platform colliders
         if (onMovingPlatform)
         {
+            Debug.Log("Getting Parent Box Colliders and removing from _numOverlaps");
             foreach (BoxCollider collider in this.GetComponentsInParent<BoxCollider>())
             {
                 for (int j = 0; j < _numOverlaps; j++)
                 {
                     _numOverlaps--;
+                    Debug.Log("Removed Overlap = " + collider.name + ", Number of CharacterOverlaps = " + _numOverlaps);
                 }
             }
         }
 
         Debug.Log("End Number of CharacterOverlaps = " + _numOverlaps);
 
+
+        // Optional Debugging 
         if (_numOverlaps != 0)
         {
             for (int i = 0; i < _numOverlaps; i++)
@@ -650,13 +667,10 @@ public class TestingInputSystem : MonoBehaviour
                 Debug.Log("Name = " + _obstructions[i].name);
                 Debug.Log("Type = " + _obstructions[i].GetType());
                 Debug.Log("Layer = " + _obstructions[i].gameObject.layer);
-
-
             }
-
         }
 
-        Debug.Log("End of CharacterOverlap");
+        Debug.Log("End of CharacterOverlap, Number of CharacterOverlaps = " + _numOverlaps);
         return _numOverlaps > 0;
 
     }

@@ -8,6 +8,9 @@ public class TerenceAnimation : MonoBehaviour
     private Rigidbody rb;
     private float maxSpeed = 7.0F;
 
+
+
+
     // Start is called before the first frame update
     void Start()
     {
