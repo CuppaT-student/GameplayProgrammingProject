@@ -28,7 +28,7 @@ public class DblJumpPowerUp : MonoBehaviour
         }
 
         //apply effect to player
-        player.GetComponent<TestingInputSystem>().canDoubleJump = true;
+        player.GetComponent<MyCharacterController>().canDoubleJump = true;
 
         //destroy this object
         Destroy(gameObject);

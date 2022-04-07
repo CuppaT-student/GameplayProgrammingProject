@@ -32,7 +32,7 @@ public class SpeedPowerUp : MonoBehaviour
         //Rigidbody rb = player.GetComponent<Rigidbody>();
         //Vector3 forceDirection = (300, 0, 0)
         //rb.AddForce(rb.transform.forward, ForceMode.Impulse);
-        player.GetComponent<TestingInputSystem>().increaseMaxSpeed(buffAmount, buffLengthSecs);
+        player.GetComponent<MyCharacterController>().increaseMaxSpeed(buffAmount, buffLengthSecs);
         //buffActive = true;
 
         //destroy this object

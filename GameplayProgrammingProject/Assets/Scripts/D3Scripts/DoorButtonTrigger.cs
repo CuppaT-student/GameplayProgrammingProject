@@ -5,7 +5,7 @@ using UnityEngine.Playables;
 
 public class DoorButtonTrigger : MonoBehaviour
 {
-    private TestingInputSystem inputsystem;
+    private MyCharacterController inputsystem;
     public PlayableDirector playable;
 
 
@@ -21,7 +21,7 @@ public class DoorButtonTrigger : MonoBehaviour
     {
         if (other.gameObject.CompareTag("Player"))
         {
-            inputsystem = other.GetComponent<TestingInputSystem>();
+            inputsystem = other.GetComponent<MyCharacterController>();
             if(inputsystem.triggerHeld)
             {
                 playable.Play();

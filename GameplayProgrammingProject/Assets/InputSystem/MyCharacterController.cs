@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class TestingInputSystem : MonoBehaviour
+public class MyCharacterController : MonoBehaviour
 {
     // create a fields for Rigidbody
     private Rigidbody capsuleRB;
@@ -19,29 +19,37 @@ public class TestingInputSystem : MonoBehaviour
     [Header("Required Components")]
     [SerializeField] Camera playerCamera;
 
-    [Header("Move Forces")]
+    [Header("Current Move Forces")]
     [SerializeField] public float walkForce = 1f;
     [SerializeField] public float runForce = 3f;
     [SerializeField] public float maxSpeed = 4.0f;
     public Vector3 forceDirection = Vector3.zero;
     public float moveAmount;
 
-    // Stance stuff - 01-04-22
-    public enum CharacterStance { Standing, Crouched, Prone }
-    public CharacterStance _stance;
+    public float rotationDamping = 20.0F;
 
-    [Header("Standing Forces |      X: walk force, Y: run force, Z: MaxSpeed")]
+    // Stance stuff - 01-04-22
+
+
+    public enum CharacterStance { Standing, Crouched, Prone }
+    [Header("Stance Values")]
+    [SerializeField] public CharacterStance _stance;
+
+    [Header("Standing Values |      X: walk force, Y: run force, Z: MaxSpeed")]
     [SerializeField] private Vector3 _standingSpeed = new Vector3(0, 0, 0);
-    [Header("Crouched Forces |      X: walk force, Y: run force, Z: MaxSpeed")]
+    [Header("Crouched Values |      X: walk force, Y: run force, Z: MaxSpeed")]
     [SerializeField] private Vector3 _crouchedSpeed = new Vector3(0, 0, 0);
-    [Header("Prone Forces |         X: walk force, Y: run force, Z: MaxSpeed")]
+    [Header("Prone Values |         X: walk force, Y: run force, Z: MaxSpeed")]
     [SerializeField] private Vector3 _proneSpeed = new Vector3(0, 0, 0);
 
-    [Header("Capsule Variables ( X = Radius, Y= Height, Z = YOffset")]
+    [Header("Standing Capsule |      X = Radius, Y= Height, Z = YOffset")]
     [SerializeField] private Vector3 _standingCapsule = Vector3.zero;
+    [Header("Crouched Capsule |      X = Radius, Y= Height, Z = YOffset")]
     [SerializeField] private Vector3 _crouchedCapsule = Vector3.zero;
+    [Header("Prone Capsule |         X = Radius, Y= Height, Z = YOffset")]
     [SerializeField] private Vector3 _proneCapsule = Vector3.zero;
 
+    [Header("Colliders & Masks")]
     public CapsuleCollider _collider;
     public SphereCollider sphereCollider;
     public Collider floorCollider;
@@ -49,8 +57,6 @@ public class TestingInputSystem : MonoBehaviour
     private Collider[] _obstructions = new Collider[8]; // This 8 is an random number but it should be atleast 2, 1 for the player 1 for an obstruction
     public Collider[] platformColliders;
 
-    private float _walkSpeed;
-    private float _runSpeed;
     private LayerMask _layerMask;
 
     // Stance State Names
@@ -63,20 +69,22 @@ public class TestingInputSystem : MonoBehaviour
 
 
     // end of Stance stuff
-
+    [Header("Enviromnent Variables")]
     public bool onMovingPlatform = false;
 
-    [Header("Jump Values")]
-    [SerializeField] private float jumpForce = 10.0F;
+    [Header("Jump Variables")]
+    [SerializeField] public float jumpForce = 10.0F;
     [SerializeField] public bool canDoubleJump = false;
-    [SerializeField] private float jumpCooldownTime = 1.0F;
+    [SerializeField] public float jumpCooldownTime = 1.0F;
     [SerializeField] public bool jumpCooldown = false;
     [SerializeField] public bool hasJumped = false;
     [SerializeField] public bool hasDoubleJumped = false;
     [SerializeField] public bool landedJump = false;
 
+    [Header("Input Action Variables")]
     [SerializeField] public bool triggerHeld = false;
 
+    [Header("Spline Variables")]
     [SerializeField] public float splineSpeed = 10;
     [SerializeField] public bool onSpline = false;
     [SerializeField] public bool jumpedOnSpline = false;
@@ -299,10 +307,15 @@ public class TestingInputSystem : MonoBehaviour
         Vector3 direction = capsuleRB.velocity;
         direction.y = 0f;
 
-        // Check if we the player is giving us input & we are moving
-        if (moveAction.ReadValue<Vector2>().sqrMagnitude > 0.1F && direction.sqrMagnitude > 0.1F)
-            // if true then change the direction the character is looking
-            this.capsuleRB.rotation = Quaternion.LookRotation(direction, Vector3.up);
+        // Check if we the player is giving input & character is are moving
+        if (moveAction.ReadValue<Vector2>().sqrMagnitude > 0.05F && direction.sqrMagnitude > 0.1F)
+        {// if true then change the direction the character is looking
+         // this.capsuleRB.rotation = Quaternion.LookRotation(direction, Vector3.up);
+
+            var rotation = Quaternion.LookRotation(direction, Vector3.up);
+            this.capsuleRB.rotation = Quaternion.Slerp(this.capsuleRB.rotation, rotation, Time.deltaTime * rotationDamping);
+
+        }
         else
             capsuleRB.angularVelocity = Vector3.zero;
     }
