@@ -11,8 +11,16 @@ public class ZoneDetection : MonoBehaviour
     {
         if (other.tag == "Player")
         {
-            playerInDetectionZone = true;
-            Debug.Log("----Player has entered Detection Zones!!!----");
+            if (other.GetComponent<MyCharacterController>()._stance == MyCharacterController.CharacterStance.Standing)
+            {
+                Debug.Log("----Player has entered Detection Zones!!!----");
+                playerInDetectionZone = true;
+            }
+            else
+            {
+                playerInDetectionZone = false;
+                Debug.Log("----Player has entered Detection Zones but is Hidden!!!----");
+            }
         }
     }
 
@@ -20,7 +28,14 @@ public class ZoneDetection : MonoBehaviour
     {
         if (other.tag == "Player")
         {
-            playerInDetectionZone = true;
+            if (other.GetComponent<MyCharacterController>()._stance == MyCharacterController.CharacterStance.Standing)
+            {
+                playerInDetectionZone = true;
+            }
+            else
+            {
+                playerInDetectionZone = false;
+            }
         }
     }
 

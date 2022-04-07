@@ -5,31 +5,23 @@ using UnityEngine.AI;
 public class EnemyAINavMesh3D : MonoBehaviour
 {
 
-    [SerializeField] public GameObject _arena;
+    [Header("Arena & Player References")]
+    [SerializeField] private GameObject playerReference;
+    [SerializeField] private GameObject _arena;
     [SerializeField] private ZoneDetection detectionZones;
-    public bool autoDetectZones = true;
-    public bool usingDetectionZones = false;
-    // Movement Specific
-    [SerializeField] public Transform destination;
 
+    [Header("Detection Zone Variables")]
+    [SerializeField] private bool autoDetectZones = true;
+    [SerializeField] private bool usingDetectionZones = false;
+    [SerializeField] private bool detectedPlayerInZone = false;
 
-    // Patrol Specific
-    [Header("Patrol")]
-    [SerializeField] public bool patrol = true;
-    public enum PatrolStyle { PatrolInOrder, PatrolRandomly, PatrolNearestPoint }
-    [SerializeField] public PatrolStyle _patrolStyle = PatrolStyle.PatrolInOrder;
-
-    [SerializeField] public Transform[] patrolTransforms;
-    public int patrolIndex = 0;
-    public int prevIndex = 0;
-    public float requiredDistanceToPatrolPoint = 1.0F;
-    private NavMeshAgent _agent;
-    private Transform previousPatrolPoint;
+    [Header("Speeds & Current Destination Variables")]
+    public float patrolSpeed = 1.0F;
+    public float aggroSpeed = 2.0F;
+    [SerializeField] public Transform currentDestination;
 
     // Line Of Sight/Player Targetting 
     [Header("Line Of Sight")]
-    public GameObject playerTarget;
-    public bool foundTarget = false;
     public float maxRadius;
     [Range(0, 360)] public float maxAngle;
     public float updateDelay = 0.5f;
@@ -37,6 +29,21 @@ public class EnemyAINavMesh3D : MonoBehaviour
     [Header("Layer Masks")]
     public LayerMask targetMask;
     public LayerMask LayerMaskobstructionMask;
+
+
+    // Patrol Specific
+    [Header("Patrol Settings")]
+    [SerializeField] public bool patrolling = true;
+    public enum PatrolStyle { PatrolInOrder, PatrolRandomly, PatrolNearestPoint }
+    [SerializeField] public PatrolStyle _patrolStyle = PatrolStyle.PatrolInOrder;
+
+    [SerializeField] public Transform[] patrolPointsTransforms;
+    public int patrolIndex = 0;
+    public int prevIndex = 0;
+    public float requiredDistanceToPatrolPoint = 1.0F;
+    private NavMeshAgent _agent;
+
+
 
     private Rigidbody rb;
 
@@ -46,9 +53,9 @@ public class EnemyAINavMesh3D : MonoBehaviour
         rb = GetComponent<Rigidbody>();
         UpdatePatrolDestination();
 
-        if (playerTarget == null)
+        if (playerReference == null)
         {
-            playerTarget = GameObject.FindGameObjectWithTag("Player");
+            playerReference = GameObject.FindGameObjectWithTag("Player");
         }
         if (!_arena)
         {
@@ -70,19 +77,25 @@ public class EnemyAINavMesh3D : MonoBehaviour
                 }
             }
         }
+        _agent.speed = patrolSpeed;
+
     }
 
 
     // Update is called once per frame
     void Update()
     {
-        //_agent.destination = destination.position;
+
         if (usingDetectionZones)
         {
             CheckDetectionZones();
         }
-
-        if (patrol)
+        if (detectedPlayerInZone)
+        {
+            currentDestination = playerReference.transform;
+            _agent.SetDestination(currentDestination.position);
+        }
+        else if (patrolling)
         {
             if (_agent.remainingDistance < requiredDistanceToPatrolPoint)
             //if (Vector3.Distance(transform.position, destination.position) < 1)
@@ -97,16 +110,15 @@ public class EnemyAINavMesh3D : MonoBehaviour
     {
         if (detectionZones.playerInDetectionZone)
         {
-            patrol = false;
-            foundTarget = true;
-            destination = playerTarget.transform;
-            _agent.SetDestination(destination.position);
-
+            patrolling = false;
+            _agent.speed = aggroSpeed;
+            detectedPlayerInZone = true;
         }
         else
         {
-            foundTarget = false;
-            patrol = true;
+            detectedPlayerInZone = false;
+            _agent.speed = patrolSpeed;
+            patrolling = true;
         }
     }
 
@@ -123,20 +135,19 @@ public class EnemyAINavMesh3D : MonoBehaviour
 
     void UpdatePatrolDestination()
     {
-        destination = patrolTransforms[patrolIndex];
+        currentDestination = patrolPointsTransforms[patrolIndex];
         //transform.rotation = Quaternion.LookRotation(destination.transform.position);
-        _agent.SetDestination(destination.position);
+        _agent.SetDestination(currentDestination.position);
     }
     void IteratePatrolIndex()
     {
-        previousPatrolPoint = patrolTransforms[patrolIndex];
         switch (_patrolStyle)
         {
             case PatrolStyle.PatrolInOrder:
                 // Patrols In Order of the added Patrol Points
                 prevIndex = patrolIndex;
                 patrolIndex++;
-                if (patrolIndex == patrolTransforms.Length)
+                if (patrolIndex == patrolPointsTransforms.Length)
                 {
                     patrolIndex = 0;
                 }
@@ -148,8 +159,8 @@ public class EnemyAINavMesh3D : MonoBehaviour
                 prevIndex = patrolIndex;
                 while (true)
                 {
-                    patrolIndex = Random.Range(0, patrolTransforms.Length);
-                    if (patrolTransforms[patrolIndex] == null || patrolIndex == prevIndex) { continue; }
+                    patrolIndex = Random.Range(0, patrolPointsTransforms.Length);
+                    if (patrolPointsTransforms[patrolIndex] == null || patrolIndex == prevIndex) { continue; }
                     else { break; }
                 }
                 break;
@@ -158,14 +169,14 @@ public class EnemyAINavMesh3D : MonoBehaviour
                 // Patrols between the two-three closest points when activated
                 float closestPoint = Mathf.Infinity;
                 int tempShortest = 0;
-                for (int i = 0; i < patrolTransforms.Length; i++)
+                for (int i = 0; i < patrolPointsTransforms.Length; i++)
                 {
                     // if tansform missing, or index is the same as current or previous patrol points then continue loop
-                    if (patrolTransforms[i] == null || i == patrolIndex || i == prevIndex) { continue; }
+                    if (patrolPointsTransforms[i] == null || i == patrolIndex || i == prevIndex) { continue; }
                     // else check if its the closest and if so assign it to tempory variable
                     else
                     {
-                        float distance = Vector3.Distance(patrolTransforms[i].position, transform.position);
+                        float distance = Vector3.Distance(patrolPointsTransforms[i].position, transform.position);
 
                         if (distance < closestPoint)
                         {
