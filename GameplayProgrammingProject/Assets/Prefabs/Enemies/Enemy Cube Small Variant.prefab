@@ -7,10 +7,18 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 2069417903817837713, guid: bb4b2163922b7444cbb5d947fb323a90, type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: b7c0c5e983ccc694ca951e69ea73caa0, type: 2}
     - target: {fileID: 2069417903817837717, guid: bb4b2163922b7444cbb5d947fb323a90, type: 3}
       propertyPath: health
       value: 40
       objectReference: {fileID: 0}
+    - target: {fileID: 2069417903817837717, guid: bb4b2163922b7444cbb5d947fb323a90, type: 3}
+      propertyPath: spawnObject
+      value: 
+      objectReference: {fileID: 2028934958031739189}
     - target: {fileID: 2069417903817837717, guid: bb4b2163922b7444cbb5d947fb323a90, type: 3}
       propertyPath: spawnMoreOnDeath
       value: 0
@@ -77,3 +85,8 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: bb4b2163922b7444cbb5d947fb323a90, type: 3}
+--- !u!1 &2028934958031739189 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 2069417903817837718, guid: bb4b2163922b7444cbb5d947fb323a90, type: 3}
+  m_PrefabInstance: {fileID: 40590699707487651}
+  m_PrefabAsset: {fileID: 0}

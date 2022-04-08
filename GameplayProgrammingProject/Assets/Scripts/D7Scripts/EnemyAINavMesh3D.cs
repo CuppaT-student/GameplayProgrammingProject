@@ -56,8 +56,8 @@ public class EnemyAINavMesh3D : MonoBehaviour
     public float requiredDistanceToPatrolPoint = 1.0F;
     private NavMeshAgent _agent;
 
-    // Line Of Sight/Player Targetting 
-    [Header("Line Of Sight")]
+    // Line Of Sight/Player Targetting (started but not finished)
+    /*[Header("Line Of Sight")]
     public float maxRadius;
     [Range(0, 360)] public float maxAngle;
     public float updateDelay = 0.5f;
@@ -65,7 +65,7 @@ public class EnemyAINavMesh3D : MonoBehaviour
     [Header("Layer Masks")]
     public LayerMask targetMask;
     public LayerMask LayerMaskobstructionMask;
-
+*/
 
 
 
@@ -344,6 +344,8 @@ public class EnemyAINavMesh3D : MonoBehaviour
         if (canTakeDMG)
         {
             health -= dmg;
+            Vector3 v3RecoilForce = hitRecoilForce * transform.forward;
+            rb.AddForce(-v3RecoilForce, ForceMode.Impulse);
             TookDamage();
             canTakeDMG = false;
         }
@@ -376,8 +378,8 @@ public class EnemyAINavMesh3D : MonoBehaviour
                     {
                         Instantiate(spawnObject, transform.position, transform.rotation);
                     }
+                    Destroy(this.gameObject);
                 }
-                Destroy(this.gameObject);
             }
             else
             {
@@ -388,7 +390,7 @@ public class EnemyAINavMesh3D : MonoBehaviour
     }
 
 
-    private void LineOfSightCheck()
+    /*private void LineOfSightCheck()
     {
         Collider[] overlaps = Physics.OverlapSphere(transform.position, maxRadius, targetMask);
 
@@ -397,5 +399,5 @@ public class EnemyAINavMesh3D : MonoBehaviour
 
         }
 
-    }
+    }*/
 }
