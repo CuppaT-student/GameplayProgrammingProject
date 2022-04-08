@@ -19,9 +19,13 @@ public class EnemyAINavMesh3D : MonoBehaviour
     public float patrolSpeed = 1.0F;
     public float aggroSpeed = 2.0F;
     public float attackRange = 1.0F;
-    public float attackForce = 1000f;
+    public float attackForce = 2000f;
+    public float hitRecoilForce = 500f;
+    public float attackCooldown = 2.0F;
     public bool canAttack = false;
     public bool isAttacking = false;
+    public bool hasAttacked = false;
+    public bool hitPlayer = false;
 
     [Range(0.0F, 1.0F)] public float patrolRotationSpeed = 1.0F;
     [Range(0.0F, 1.0F)] public float aggroRotationSpeed = 1.0F;
@@ -58,6 +62,26 @@ public class EnemyAINavMesh3D : MonoBehaviour
 
 
     private Rigidbody rb;
+
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (hasAttacked && !hitPlayer)
+        {
+            if (other.tag == "Player")
+            {
+
+                Debug.Log("----Enemy hit Player!!!----");
+                Vector3 v3RecoilForce = hitRecoilForce * transform.forward;
+                rb.AddForce(-v3RecoilForce, ForceMode.Impulse);
+                hitPlayer = true;
+                // do damage
+                // move back
+            }
+        }
+
+    }
+
 
     private void Awake()
     {
@@ -99,6 +123,7 @@ public class EnemyAINavMesh3D : MonoBehaviour
     private void FixedUpdate()
     {
 
+
         if (usingDetectionZones)
         {
             CheckDetectionZones();
@@ -133,6 +158,7 @@ public class EnemyAINavMesh3D : MonoBehaviour
         float dotProduct = Vector3.Dot(targetDirection, transform.forward);
         if (dotProduct > 0.9)
         {
+            canAttack = true;
             distanceToTarget = Vector3.Distance(currentDestination.transform.position, transform.position);
             return true;
         }
@@ -161,18 +187,21 @@ public class EnemyAINavMesh3D : MonoBehaviour
                     _agent.enabled = false;
                     Vector3 normalisedDirection = Vector3.Normalize(currentDestination.position);
                     Vector3 v3Force = attackForce * transform.forward;
-                    rb.AddForce(v3Force.x, v3Force.y, v3Force.z, ForceMode.Impulse);
+                    //rb.AddForce(transform.up * 300, ForceMode.Impulse);
+                    rb.AddForce(v3Force, ForceMode.Impulse);
                     //                    rb.AddForce(normalisedDirection.x * 30, 500.0F, normalisedDirection.z * 30, ForceMode.Impulse);
-
+                    hasAttacked = true;
                     canAttack = false;
                 }
             }
-
-            if (IsGrounded())
+            if (hasAttacked)
             {
-                _agent.enabled = true;
-                StartCoroutine(AttackCooldownTimer(5.0F));
+                if (IsGrounded())
+                {
+                    _agent.enabled = true;
+                    StartCoroutine(AttackCooldownTimer(attackCooldown));
 
+                }
             }
             //_agent.isStopped = false;
             _agent.SetDestination(currentDestination.position);
@@ -204,9 +233,12 @@ public class EnemyAINavMesh3D : MonoBehaviour
     IEnumerator AttackCooldownTimer(float time)
     {
         yield return new WaitForSeconds(time);
-        Debug.Log("Attack Cooldown, Now checking if Grounded!");
+
         canAttack = true;
         isAttacking = false;
+        hasAttacked = false;
+        hitPlayer = false;
+
     }
 
     private void CheckDetectionZones()
