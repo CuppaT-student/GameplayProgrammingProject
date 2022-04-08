@@ -18,7 +18,19 @@ public class EnemyAINavMesh3D : MonoBehaviour
     [Header("Speeds & Current Destination Variables")]
     public float patrolSpeed = 1.0F;
     public float aggroSpeed = 2.0F;
+    public float attackRange = 1.0F;
+    public float attackForce = 1000f;
+    public bool canAttack = false;
+    public bool isAttacking = false;
+
+    [Range(0.0F, 1.0F)] public float patrolRotationSpeed = 1.0F;
+    [Range(0.0F, 1.0F)] public float aggroRotationSpeed = 1.0F;
     [SerializeField] public Transform currentDestination;
+
+    private Quaternion lookRotation;
+    private Vector3 targetDirection;
+    private bool isLookingAtDestination = false;
+    private float distanceToTarget;
 
     // Line Of Sight/Player Targetting 
     [Header("Line Of Sight")]
@@ -83,7 +95,8 @@ public class EnemyAINavMesh3D : MonoBehaviour
 
 
     // Update is called once per frame
-    void Update()
+
+    private void FixedUpdate()
     {
 
         if (usingDetectionZones)
@@ -92,18 +105,108 @@ public class EnemyAINavMesh3D : MonoBehaviour
         }
         if (detectedPlayerInZone)
         {
+
             currentDestination = playerReference.transform;
-            _agent.SetDestination(currentDestination.position);
+            if (!isAttacking)
+            {
+                MoveAgent();
+            }
         }
         else if (patrolling)
         {
             if (_agent.remainingDistance < requiredDistanceToPatrolPoint)
-            //if (Vector3.Distance(transform.position, destination.position) < 1)
             {
                 IteratePatrolIndex();
                 UpdatePatrolDestination();
             }
         }
+
+    }
+
+
+    private bool LookAtTarget()
+    {
+
+        targetDirection = (playerReference.transform.position - transform.position).normalized;
+        lookRotation = Quaternion.LookRotation(targetDirection);
+        transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, Time.deltaTime * aggroRotationSpeed);
+        float dotProduct = Vector3.Dot(targetDirection, transform.forward);
+        if (dotProduct > 0.9)
+        {
+            distanceToTarget = Vector3.Distance(currentDestination.transform.position, transform.position);
+            return true;
+        }
+        return false;
+    }
+
+    private bool CheckAttackRange()
+    {
+        if (distanceToTarget < attackRange)
+        {
+            //_agent.isStopped = true;
+            return true;
+        }
+        return false;
+    }
+    private void MoveAgent()
+    {
+        if (LookAtTarget())
+        {
+            if (canAttack)
+            {
+                if (CheckAttackRange())
+                {
+                    isAttacking = true;
+                    Debug.Log("----Attacking Target!!!----");
+                    _agent.enabled = false;
+                    Vector3 normalisedDirection = Vector3.Normalize(currentDestination.position);
+                    Vector3 v3Force = attackForce * transform.forward;
+                    rb.AddForce(v3Force.x, v3Force.y, v3Force.z, ForceMode.Impulse);
+                    //                    rb.AddForce(normalisedDirection.x * 30, 500.0F, normalisedDirection.z * 30, ForceMode.Impulse);
+
+                    canAttack = false;
+                }
+            }
+
+            if (IsGrounded())
+            {
+                _agent.enabled = true;
+                StartCoroutine(AttackCooldownTimer(5.0F));
+
+            }
+            //_agent.isStopped = false;
+            _agent.SetDestination(currentDestination.position);
+
+        }
+    }
+
+    private bool IsGrounded()
+    {
+        // define a new ray at with -
+        // origin = slightly above the characters feet to ensure we cast above whatever surface the player is on
+        // direction = down (4Head)
+        Ray ray = new Ray(this.transform.position + Vector3.up * 0.25F, Vector3.down);
+
+        Debug.DrawLine(ray.origin, ray.origin + Vector3.down * 3f, Color.red, 2f);
+
+        if (Physics.Raycast(ray, out RaycastHit hit, 3f))
+        {
+            Debug.Log("Enemy Cube IS GROUNDED!");
+            return true;
+        }
+        else
+        {
+            Debug.Log("Enemy Cube NOT GROUNDED!");
+            return false;
+        }
+    }
+
+    IEnumerator AttackCooldownTimer(float time)
+    {
+        yield return new WaitForSeconds(time);
+        Debug.Log("Attack Cooldown, Now checking if Grounded!");
+        canAttack = true;
+        isAttacking = false;
     }
 
     private void CheckDetectionZones()
@@ -133,10 +236,11 @@ public class EnemyAINavMesh3D : MonoBehaviour
 
     }
 
+
+
     void UpdatePatrolDestination()
     {
         currentDestination = patrolPointsTransforms[patrolIndex];
-        //transform.rotation = Quaternion.LookRotation(destination.transform.position);
         _agent.SetDestination(currentDestination.position);
     }
     void IteratePatrolIndex()

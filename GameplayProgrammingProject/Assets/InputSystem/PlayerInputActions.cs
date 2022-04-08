@@ -267,7 +267,7 @@ public class @PlayerInputActions : IInputActionCollection, IDisposable
                     ""name"": """",
                     ""id"": ""891658f1-6a1c-4723-a95d-4501c63eef72"",
                     ""path"": ""<Keyboard>/leftCtrl"",
-                    ""interactions"": """",
+                    ""interactions"": ""Hold(duration=1),Tap(duration=0.4)"",
                     ""processors"": """",
                     ""groups"": ""Keyboard"",
                     ""action"": ""Stance"",
