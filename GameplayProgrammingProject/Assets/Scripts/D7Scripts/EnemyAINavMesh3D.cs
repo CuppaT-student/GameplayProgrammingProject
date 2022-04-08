@@ -19,6 +19,8 @@ public class EnemyAINavMesh3D : MonoBehaviour
     [Header("Speeds & Current Destination Variables")]
     public float patrolSpeed = 1.0F;
     public float aggroSpeed = 2.0F;
+    public float jumpForce = 10000.0F;
+    public float attackChargeTime = 2f;
     public float attackRange = 1.0F;
     public float attackForce = 2000f;
     public float hitRecoilForce = 500f;
@@ -170,7 +172,6 @@ public class EnemyAINavMesh3D : MonoBehaviour
 
     private bool LookAtTarget()
     {
-
         targetDirection = (playerReference.transform.position - transform.position).normalized;
         lookRotation = Quaternion.LookRotation(targetDirection);
         transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, Time.deltaTime * aggroRotationSpeed);
@@ -204,26 +205,29 @@ public class EnemyAINavMesh3D : MonoBehaviour
                     isAttacking = true;
                     Debug.Log("----Attacking Target!!!----");
                     _agent.enabled = false;
-                    Vector3 normalisedDirection = Vector3.Normalize(currentDestination.position);
+                    // Vector3 normalisedDirection = Vector3.Normalize(currentDestination.position);
+                    rb.AddForce(0, jumpForce * Time.fixedDeltaTime, 0, ForceMode.Impulse);
                     Vector3 v3Force = attackForce * transform.forward;
-                    //rb.AddForce(transform.up * 300, ForceMode.Impulse);
-                    rb.AddForce(v3Force, ForceMode.Impulse);
+
+                    //rb.AddForce(v3Force, ForceMode.Impulse);
                     //                    rb.AddForce(normalisedDirection.x * 30, 500.0F, normalisedDirection.z * 30, ForceMode.Impulse);
-                    hasAttacked = true;
-                    canAttack = false;
+
+                    StartCoroutine(JumpWaitTimer(attackChargeTime));
+                    //hasAttacked = true;
                 }
+                /*                else
+                                {
+                                    _agent.SetDestination(currentDestination.position);
+                                }*/
             }
             if (hasAttacked)
             {
-                if (IsGrounded())
-                {
-                    _agent.enabled = true;
-                    StartCoroutine(AttackCooldownTimer(attackCooldown));
+                StartCoroutine(AttackCooldownTimer(attackCooldown));
 
-                }
             }
-            //_agent.isStopped = false;
+
             _agent.SetDestination(currentDestination.position);
+            //_agent.isStopped = false;
 
         }
     }
@@ -252,13 +256,25 @@ public class EnemyAINavMesh3D : MonoBehaviour
     IEnumerator AttackCooldownTimer(float time)
     {
         yield return new WaitForSeconds(time);
-
-        canAttack = true;
-        isAttacking = false;
         hasAttacked = false;
+        canAttack = true;
+    }
+
+    IEnumerator JumpWaitTimer(float time)
+    {
+        yield return new WaitForSeconds(time);
         hitPlayer = false;
+        Vector3 v3Force = attackForce * transform.forward;
+        rb.AddForce(v3Force, ForceMode.Impulse);
+        canAttack = false;
+        _agent.enabled = true;
+        hasAttacked = true;
+        isAttacking = false;
+
+
 
     }
+
 
     private void CheckDetectionZones()
     {
