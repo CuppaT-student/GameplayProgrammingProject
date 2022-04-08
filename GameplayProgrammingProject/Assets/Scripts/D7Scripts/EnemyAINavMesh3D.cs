@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.AI;
 public class EnemyAINavMesh3D : MonoBehaviour
 {
+    private Rigidbody rb;
 
     [Header("Arena & Player References")]
     [SerializeField] private GameObject playerReference;
@@ -52,8 +53,8 @@ public class EnemyAINavMesh3D : MonoBehaviour
     [SerializeField] public bool patrolling = true;
     public enum PatrolStyle { PatrolInOrder, PatrolRandomly, PatrolNearestPoint }
     [SerializeField] public PatrolStyle _patrolStyle = PatrolStyle.PatrolInOrder;
-
     [SerializeField] public Transform[] patrolPointsTransforms;
+
     public int patrolIndex = 0;
     public int prevIndex = 0;
     public float requiredDistanceToPatrolPoint = 1.0F;
@@ -61,7 +62,13 @@ public class EnemyAINavMesh3D : MonoBehaviour
 
 
 
-    private Rigidbody rb;
+    [Header("Material Settings")]
+    [SerializeField] public Material material;
+    [SerializeField] public Color defaultMaterialColor;
+    [SerializeField] public Color defaultMaterialEmissiveColor;
+    [SerializeField] public Color damageMaterialColor;
+    [SerializeField] public Color damageMaterialEmissiveColor;
+    public float dmgIndicatorTimer = 2.0F;
 
 
     private void OnTriggerEnter(Collider other)
@@ -74,6 +81,7 @@ public class EnemyAINavMesh3D : MonoBehaviour
                 Debug.Log("----Enemy hit Player!!!----");
                 Vector3 v3RecoilForce = hitRecoilForce * transform.forward;
                 rb.AddForce(-v3RecoilForce, ForceMode.Impulse);
+                TookDamage();
                 hitPlayer = true;
                 // do damage
                 // move back
@@ -87,7 +95,12 @@ public class EnemyAINavMesh3D : MonoBehaviour
     {
         _agent = GetComponent<NavMeshAgent>();
         rb = GetComponent<Rigidbody>();
-        UpdatePatrolDestination();
+
+        defaultMaterialColor = material.GetColor("_Color");
+        defaultMaterialEmissiveColor = material.GetColor("_EmissionColor");
+
+
+
 
         if (playerReference == null)
         {
@@ -99,6 +112,7 @@ public class EnemyAINavMesh3D : MonoBehaviour
         }
         else
         {
+
             if (!_arena.GetComponent<ZoneDetection>())
             {
                 Debug.Log("----Arena has no Assigned Detection Zones!!!----");
@@ -113,10 +127,15 @@ public class EnemyAINavMesh3D : MonoBehaviour
                 }
             }
         }
+
+        UpdatePatrolDestination();
         _agent.speed = patrolSpeed;
 
     }
 
+    private void Start()
+    {
+    }
 
     // Update is called once per frame
 
@@ -329,5 +348,23 @@ public class EnemyAINavMesh3D : MonoBehaviour
                 patrolIndex = tempShortest;
                 break;
         }
+    }
+
+    public void TookDamage()
+    {
+
+        material.SetColor("_Color", damageMaterialColor);
+        material.SetColor("_EmissionColor", damageMaterialEmissiveColor);
+
+        StartCoroutine(ResetMaterialColour(dmgIndicatorTimer));
+
+    }
+
+    IEnumerator ResetMaterialColour(float time)
+    {
+        yield return new WaitForSeconds(time);
+
+        material.SetColor("_Color", defaultMaterialColor);
+        material.SetColor("_EmissionColor", defaultMaterialEmissiveColor);
     }
 }
