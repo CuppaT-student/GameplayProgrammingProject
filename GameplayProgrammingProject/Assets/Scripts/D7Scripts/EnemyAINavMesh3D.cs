@@ -16,9 +16,10 @@ public class EnemyAINavMesh3D : MonoBehaviour
     [SerializeField] private bool usingDetectionZones = false;
     [SerializeField] private bool detectedPlayerInZone = false;
 
-    [Header("Speeds & Current Destination Variables")]
+    [Header("Speeds & Attack Variables")]
     public float patrolSpeed = 1.0F;
     public float aggroSpeed = 2.0F;
+    [Range(0.0F, 1.0F)] public float aggroRotationSpeed = 1.0F;
     public float jumpForce = 10000.0F;
     public float attackChargeTime = 2f;
     public float attackRange = 1.0F;
@@ -30,25 +31,18 @@ public class EnemyAINavMesh3D : MonoBehaviour
     public bool hasAttacked = false;
     public bool hitPlayer = false;
 
-    [Range(0.0F, 1.0F)] public float patrolRotationSpeed = 1.0F;
-    [Range(0.0F, 1.0F)] public float aggroRotationSpeed = 1.0F;
+    public float health = 100.0F;
+    public bool canTakeDMG = true;
+    public bool spawnMoreOnDeath = true;
+    public int spawnAmount = 2;
+    public GameObject spawnObject;
+
     [SerializeField] public Transform currentDestination;
 
     private Quaternion lookRotation;
     private Vector3 targetDirection;
     private bool isLookingAtDestination = false;
     private float distanceToTarget;
-
-    // Line Of Sight/Player Targetting 
-    [Header("Line Of Sight")]
-    public float maxRadius;
-    [Range(0, 360)] public float maxAngle;
-    public float updateDelay = 0.5f;
-
-    [Header("Layer Masks")]
-    public LayerMask targetMask;
-    public LayerMask LayerMaskobstructionMask;
-
 
     // Patrol Specific
     [Header("Patrol Settings")]
@@ -61,6 +55,19 @@ public class EnemyAINavMesh3D : MonoBehaviour
     public int prevIndex = 0;
     public float requiredDistanceToPatrolPoint = 1.0F;
     private NavMeshAgent _agent;
+
+    // Line Of Sight/Player Targetting 
+    [Header("Line Of Sight")]
+    public float maxRadius;
+    [Range(0, 360)] public float maxAngle;
+    public float updateDelay = 0.5f;
+
+    [Header("Layer Masks")]
+    public LayerMask targetMask;
+    public LayerMask LayerMaskobstructionMask;
+
+
+
 
 
 
@@ -80,7 +87,7 @@ public class EnemyAINavMesh3D : MonoBehaviour
             if (other.tag == "Player")
             {
 
-                Debug.Log("----Enemy hit Player!!!----");
+                Debug.Log("----Enemy cube hit Player!!!----");
                 Vector3 v3RecoilForce = hitRecoilForce * transform.forward;
                 rb.AddForce(-v3RecoilForce, ForceMode.Impulse);
                 TookDamage();
@@ -97,7 +104,7 @@ public class EnemyAINavMesh3D : MonoBehaviour
     {
         _agent = GetComponent<NavMeshAgent>();
         rb = GetComponent<Rigidbody>();
-
+        material = GetComponent<Renderer>().material;
         defaultMaterialColor = material.GetColor("_Color");
         defaultMaterialEmissiveColor = material.GetColor("_EmissionColor");
 
@@ -111,9 +118,8 @@ public class EnemyAINavMesh3D : MonoBehaviour
         if (!_arena)
         {
             Debug.Log("----Enemy has no Assigned Arena!!!----");
-        }
-        else
-        {
+            _arena = GameObject.FindGameObjectWithTag("Arena");
+
 
             if (!_arena.GetComponent<ZoneDetection>())
             {
@@ -128,13 +134,19 @@ public class EnemyAINavMesh3D : MonoBehaviour
                     usingDetectionZones = true;
                 }
             }
+
+            int index = 0;
+            foreach (GameObject obj in GameObject.FindGameObjectsWithTag("PatrolPoint"))
+            {
+                patrolPointsTransforms[index] = obj.transform;
+                index++;
+            }
+
+            UpdatePatrolDestination();
+            _agent.speed = patrolSpeed;
+
         }
-
-        UpdatePatrolDestination();
-        _agent.speed = patrolSpeed;
-
     }
-
     private void Start()
     {
     }
@@ -155,7 +167,7 @@ public class EnemyAINavMesh3D : MonoBehaviour
             currentDestination = playerReference.transform;
             if (!isAttacking)
             {
-                MoveAgent();
+                HuntTarget();
             }
         }
         else if (patrolling)
@@ -169,6 +181,31 @@ public class EnemyAINavMesh3D : MonoBehaviour
 
     }
 
+
+
+    private void HuntTarget()
+    {
+        if (LookAtTarget())
+        {
+            if (canAttack)
+            {
+                if (TargetInAttackRange())
+                {
+                    isAttacking = true;
+                    Debug.Log("----Enemy Cube Preparing to Attacking Target!!!----");
+                    _agent.enabled = false;
+                    rb.AddForce(0, jumpForce * Time.fixedDeltaTime, 0, ForceMode.Impulse);
+                    Vector3 v3Force = attackForce * transform.forward;
+                    StartCoroutine(JumpWaitTimer(attackChargeTime));
+                }
+            }
+            if (hasAttacked)
+            {
+                StartCoroutine(AttackCooldownTimer(attackCooldown));
+            }
+            _agent.SetDestination(currentDestination.position);
+        }
+    }
 
     private bool LookAtTarget()
     {
@@ -185,72 +222,13 @@ public class EnemyAINavMesh3D : MonoBehaviour
         return false;
     }
 
-    private bool CheckAttackRange()
+    private bool TargetInAttackRange()
     {
         if (distanceToTarget < attackRange)
         {
-            //_agent.isStopped = true;
             return true;
         }
         return false;
-    }
-    private void MoveAgent()
-    {
-        if (LookAtTarget())
-        {
-            if (canAttack)
-            {
-                if (CheckAttackRange())
-                {
-                    isAttacking = true;
-                    Debug.Log("----Attacking Target!!!----");
-                    _agent.enabled = false;
-                    // Vector3 normalisedDirection = Vector3.Normalize(currentDestination.position);
-                    rb.AddForce(0, jumpForce * Time.fixedDeltaTime, 0, ForceMode.Impulse);
-                    Vector3 v3Force = attackForce * transform.forward;
-
-                    //rb.AddForce(v3Force, ForceMode.Impulse);
-                    //                    rb.AddForce(normalisedDirection.x * 30, 500.0F, normalisedDirection.z * 30, ForceMode.Impulse);
-
-                    StartCoroutine(JumpWaitTimer(attackChargeTime));
-                    //hasAttacked = true;
-                }
-                /*                else
-                                {
-                                    _agent.SetDestination(currentDestination.position);
-                                }*/
-            }
-            if (hasAttacked)
-            {
-                StartCoroutine(AttackCooldownTimer(attackCooldown));
-
-            }
-
-            _agent.SetDestination(currentDestination.position);
-            //_agent.isStopped = false;
-
-        }
-    }
-
-    private bool IsGrounded()
-    {
-        // define a new ray at with -
-        // origin = slightly above the characters feet to ensure we cast above whatever surface the player is on
-        // direction = down (4Head)
-        Ray ray = new Ray(this.transform.position + Vector3.up * 0.25F, Vector3.down);
-
-        Debug.DrawLine(ray.origin, ray.origin + Vector3.down * 3f, Color.red, 2f);
-
-        if (Physics.Raycast(ray, out RaycastHit hit, 3f))
-        {
-            Debug.Log("Enemy Cube IS GROUNDED!");
-            return true;
-        }
-        else
-        {
-            Debug.Log("Enemy Cube NOT GROUNDED!");
-            return false;
-        }
     }
 
     IEnumerator AttackCooldownTimer(float time)
@@ -263,9 +241,13 @@ public class EnemyAINavMesh3D : MonoBehaviour
     IEnumerator JumpWaitTimer(float time)
     {
         yield return new WaitForSeconds(time);
+
+        Debug.Log("----Enemy Cube Attacking Target!!!----");
         hitPlayer = false;
         Vector3 v3Force = attackForce * transform.forward;
         rb.AddForce(v3Force, ForceMode.Impulse);
+
+        Debug.Log("----Enemy Cube Has Attacked!!!----");
         canAttack = false;
         _agent.enabled = true;
         hasAttacked = true;
@@ -292,16 +274,7 @@ public class EnemyAINavMesh3D : MonoBehaviour
         }
     }
 
-    private void LineOfSightCheck()
-    {
-        Collider[] overlaps = Physics.OverlapSphere(transform.position, maxRadius, targetMask);
 
-        if (overlaps.Length != 0)
-        {
-
-        }
-
-    }
 
 
 
@@ -366,6 +339,16 @@ public class EnemyAINavMesh3D : MonoBehaviour
         }
     }
 
+    public void TakeDamage(float dmg)
+    {
+        if (canTakeDMG)
+        {
+            health -= dmg;
+            TookDamage();
+            canTakeDMG = false;
+        }
+    }
+
     public void TookDamage()
     {
 
@@ -382,5 +365,37 @@ public class EnemyAINavMesh3D : MonoBehaviour
 
         material.SetColor("_Color", defaultMaterialColor);
         material.SetColor("_EmissionColor", defaultMaterialEmissiveColor);
+
+        if (health < 0)
+        {
+            if (spawnObject != null)
+            {
+                if (spawnMoreOnDeath)
+                {
+                    for (int i = 0; i < spawnAmount; i++)
+                    {
+                        Instantiate(spawnObject, transform.position, transform.rotation);
+                    }
+                }
+                Destroy(this.gameObject);
+            }
+            else
+            {
+                Destroy(this.gameObject);
+            }
+        }
+        canTakeDMG = true;
+    }
+
+
+    private void LineOfSightCheck()
+    {
+        Collider[] overlaps = Physics.OverlapSphere(transform.position, maxRadius, targetMask);
+
+        if (overlaps.Length != 0)
+        {
+
+        }
+
     }
 }

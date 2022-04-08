@@ -6,6 +6,8 @@ TagManager:
   tags:
   - TriggerCol
   - PatrolPoint
+  - Enemy
+  - Arena
   layers:
   - Default
   - TransparentFX

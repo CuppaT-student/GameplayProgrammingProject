@@ -72,6 +72,14 @@ public class MyCharacterController : MonoBehaviour
     [Header("Enviromnent Variables")]
     public bool onMovingPlatform = false;
 
+    //Combat
+    [Header("Combat Variables")]
+    public bool isAttacking = false;
+
+    [SerializeField] public GameObject leftArm;
+    [SerializeField] public CapsuleCollider leftArmCollider;
+
+
     [Header("Jump Variables")]
     [SerializeField] public float jumpForce = 10.0F;
     [SerializeField] public bool canDoubleJump = false;
@@ -92,6 +100,7 @@ public class MyCharacterController : MonoBehaviour
     public float pathDistanceTravelled = 0;
 
 
+    #region - Awake/Start -
     private void Start()
     {
         // Stance stuff
@@ -140,8 +149,9 @@ public class MyCharacterController : MonoBehaviour
     }
 
 
+    #endregion
 
-
+    #region - Enable/Disable -
     private void OnEnable()
     {
         playerInputActions.ThirdPersonPlayer.Jump.started += DoJump;
@@ -170,33 +180,41 @@ public class MyCharacterController : MonoBehaviour
 
     }
 
+    #endregion
 
+    #region - Collisions -
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (isAttacking)
+        {
+            if (other.CompareTag("Enemy"))
+            {
+                other.GetComponent<EnemyAINavMesh3D>().TakeDamage(45);
+            }
+        }
+    }
+
+    #endregion
+
+    #region - Events -
+
+    public void StartMeleeAttacking()
+    {
+        isAttacking = true;
+    }
+
+    public void FinishMeleeAttacking()
+    {
+        isAttacking = false;
+    }
+
+    #endregion
+
+    #region - Updates - 
     private void LateUpdate()
     {
-        // MovingPlatform Colliders for stance change code attempt
-        /*        if (onMovingPlatform)
-                {
-                    if (platformColliders.Length == 0)
-                    {
-                        int i = 0;
-                        foreach (Collider collider in this.GetComponentsInParent<Collider>())
-                        {
 
-                            platformColliders[i] = collider;
-                            i++;
-                        }
-                    }
-                }
-                else if (!onMovingPlatform)
-                {
-                    if (platformColliders.Length != 0)
-                    {
-                        for (int i = 0; i < platformColliders.Length; i++)
-                        {
-                            platformColliders[i] = null;
-                        }
-                    }
-                }*/
     }
 
     private void FixedUpdate()
@@ -246,6 +264,9 @@ public class MyCharacterController : MonoBehaviour
         }
     }
 
+    #endregion
+
+    #region - Movement -
     private void SplineMove()
     {
         /*        float distanceTravelledInJump = 0;
@@ -270,20 +291,22 @@ public class MyCharacterController : MonoBehaviour
 
     private void Move()
     {
-
-        if (moveAmount >= 0.5F)
+        if (!isAttacking)
         {
-            forceDirection += moveAction.ReadValue<Vector2>().x * GetCameraRight(playerCamera) * runForce;
-            forceDirection += moveAction.ReadValue<Vector2>().y * GetCameraForward(playerCamera) * runForce;
-        }
-        else
-        {
-            forceDirection += moveAction.ReadValue<Vector2>().x * GetCameraRight(playerCamera) * walkForce;
-            forceDirection += moveAction.ReadValue<Vector2>().y * GetCameraForward(playerCamera) * walkForce;
-        }
+            if (moveAmount >= 0.5F)
+            {
+                forceDirection += moveAction.ReadValue<Vector2>().x * GetCameraRight(playerCamera) * runForce;
+                forceDirection += moveAction.ReadValue<Vector2>().y * GetCameraForward(playerCamera) * runForce;
+            }
+            else
+            {
+                forceDirection += moveAction.ReadValue<Vector2>().x * GetCameraRight(playerCamera) * walkForce;
+                forceDirection += moveAction.ReadValue<Vector2>().y * GetCameraForward(playerCamera) * walkForce;
+            }
 
-        //        capsuleRB.velocity = forceDirection * 2.5f;
-        capsuleRB.AddForce(forceDirection, ForceMode.Impulse);
+            //        capsuleRB.velocity = forceDirection * 2.5f;
+            capsuleRB.AddForce(forceDirection, ForceMode.Impulse);
+        }
         forceDirection = Vector3.zero;
 
         // create gravity accerlation 
@@ -338,6 +361,9 @@ public class MyCharacterController : MonoBehaviour
         return right.normalized;
     }
 
+    #endregion
+
+    #region - DoActions - 
     private void DoJump(InputAction.CallbackContext obj)
     {
 
@@ -384,6 +410,30 @@ public class MyCharacterController : MonoBehaviour
             landedJump = false;
         }
     }
+
+    private void DoAttack(InputAction.CallbackContext obj)
+    {
+        if (!isAttacking)
+        {
+            StartMeleeAttacking();
+            animator.SetTrigger("MeleeSwipe");
+        }
+    }
+
+
+
+    private void DoTrigger(InputAction.CallbackContext obj)
+    {
+        triggerHeld = obj.ReadValueAsButton();
+        Debug.Log("Trigger Pressed");
+    }
+
+
+
+    #endregion
+
+    #region - Utility -
+
     private bool IsGrounded()
     {
         // define a new ray at with -
@@ -423,10 +473,6 @@ public class MyCharacterController : MonoBehaviour
         jumpCooldown = false;
     }
 
-    private void DoAttack(InputAction.CallbackContext obj)
-    {
-        animator.SetTrigger("attackTrigger");
-    }
 
     public void increaseMaxSpeed(float newSpeed, float time)
     {
@@ -442,13 +488,9 @@ public class MyCharacterController : MonoBehaviour
         maxSpeed -= newSpeed;
     }
 
+    #endregion
 
-    private void DoTrigger(InputAction.CallbackContext obj)
-    {
-        triggerHeld = obj.ReadValueAsButton();
-        Debug.Log("Trigger Pressed");
-    }
-
+    #region - Stance -
 
     private void ChangeStance(InputAction.CallbackContext obj)
     {
@@ -697,4 +739,5 @@ public class MyCharacterController : MonoBehaviour
         Debug.Log("Capsule Dimensions Set!");
     }
 
+    #endregion
 }
