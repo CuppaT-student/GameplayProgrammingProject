@@ -88,6 +88,15 @@ public class MyCharacterController : MonoBehaviour
     [SerializeField] public bool hasJumped = false;
     [SerializeField] public bool hasDoubleJumped = false;
     [SerializeField] public bool landedJump = false;
+    [SerializeField] public bool grounded = false;
+
+
+    Ray groundedRay;
+    RaycastHit groundHitInfo;
+    public float groundAngle;
+    public float maxGroundAngle = 130;
+    public Vector3 characterForward;
+    public bool sliding = false;
 
     [Header("Input Action Variables")]
     [SerializeField] public bool triggerHeld = false;
@@ -219,13 +228,24 @@ public class MyCharacterController : MonoBehaviour
 
     private void FixedUpdate()
     {
+
+        IsGrounded();
+        CalculateCharacterForward();
+        CalculateGroundAngle();
+        DrawDebugLines();
+
         moveAmount = Mathf.Clamp01(Mathf.Abs(moveAction.ReadValue<Vector2>().x) + Mathf.Abs(moveAction.ReadValue<Vector2>().y));
 
         if (!jumpCooldown)
         {
-            if (hasJumped && IsGrounded())
+            if (hasJumped && grounded)
             {
+                if (hasDoubleJumped)
+                {
+                    hasDoubleJumped = false;
+                }
                 landedJump = true;
+                hasJumped = false;
             }
         }
 
@@ -260,7 +280,22 @@ public class MyCharacterController : MonoBehaviour
         }
         else
         {
-            Move();
+            if (groundAngle < maxGroundAngle)
+            {
+                Move();
+            }
+            else
+            {
+                handleGravity();
+                /*                if (sliding)
+                                {
+                                    if (characterForward.y > 0.05f)
+                                    {
+                                        //then make character face opposite direction/down slope
+                                    }
+                                }
+                */
+            }
         }
     }
 
@@ -309,17 +344,7 @@ public class MyCharacterController : MonoBehaviour
         }
         forceDirection = Vector3.zero;
 
-        // create gravity accerlation 
-        if (capsuleRB.velocity.y < 0f)
-            capsuleRB.velocity -= Physics.gravity.y * Time.fixedDeltaTime * Vector3.down;
-
-        // create a cap for the players speed but on the horizontal plane (so gravity still increases)
-        Vector3 horizontalVelocity = capsuleRB.velocity;
-        horizontalVelocity.y = 0;
-        // check if we have exceeded our maxspeed variable
-        if (horizontalVelocity.sqrMagnitude > maxSpeed * maxSpeed)
-            //if true, we set the horizontal speed to be the max and keep the current velocity in the y axis
-            capsuleRB.velocity = horizontalVelocity.normalized * maxSpeed + Vector3.up * capsuleRB.velocity.y;
+        handleGravity();
 
         // Look at function controls the direction of our rb character
         LookAt();
@@ -361,6 +386,21 @@ public class MyCharacterController : MonoBehaviour
         return right.normalized;
     }
 
+    private void handleGravity()
+    {
+        // create gravity accerlation 
+        if (capsuleRB.velocity.y < 0f)
+            capsuleRB.velocity -= Physics.gravity.y * Time.fixedDeltaTime * Vector3.down;
+
+        // create a cap for the players speed but on the horizontal plane (so gravity still increases)
+        Vector3 horizontalVelocity = capsuleRB.velocity;
+        horizontalVelocity.y = 0;
+        // check if we have exceeded our maxspeed variable
+        if (horizontalVelocity.sqrMagnitude > maxSpeed * maxSpeed)
+            //if true, we set the horizontal speed to be the max and keep the current velocity in the y axis
+            capsuleRB.velocity = horizontalVelocity.normalized * maxSpeed + Vector3.up * capsuleRB.velocity.y;
+    }
+
     #endregion
 
     #region - DoActions - 
@@ -375,7 +415,7 @@ public class MyCharacterController : MonoBehaviour
         }
 
         // Jump Function 
-        if (IsGrounded())
+        if (grounded && !sliding)
         {
             if (follower.marioAutoRunStyle)
             {
@@ -439,33 +479,58 @@ public class MyCharacterController : MonoBehaviour
         // define a new ray at with -
         // origin = slightly above the characters feet to ensure we cast above whatever surface the player is on
         // direction = down (4Head)
-        Ray ray = new Ray(this.transform.position + Vector3.up * 0.25F, Vector3.down);
+        groundedRay = new Ray(this.transform.position + Vector3.up * 0.25F, Vector3.down);
 
-        Debug.DrawLine(ray.origin, ray.origin + Vector3.down * 0.9f, Color.red, 2f);
+        Debug.DrawLine(groundedRay.origin, groundedRay.origin + Vector3.down * 0.5f, Color.red, 2f);
 
-        if (Physics.Raycast(ray, out RaycastHit hit, 0.5f))
+        if (Physics.Raycast(groundedRay, out groundHitInfo, 1f))
         {
 
-            if (hasJumped)
-            {
-
-                if (hasDoubleJumped)
-                {
-                    hasDoubleJumped = false;
-                }
-                landedJump = true;
-                hasJumped = false;
-            }
-            floorCollider = hit.collider;
+            floorCollider = groundHitInfo.collider;
             Debug.Log("IS GROUNDED!");
+            grounded = true;
             return true;
         }
         else
         {
             Debug.Log("NOT GROUNDED!");
+            grounded = false;
             return false;
         }
     }
+
+    public void CalculateGroundAngle()
+    {
+        if (!grounded)
+        {
+            groundAngle = 90;
+            return;
+        }
+
+        groundAngle = Vector3.Angle(groundHitInfo.normal, transform.forward);
+
+        if (groundAngle > 100 || groundAngle < 80)
+        {
+            sliding = true;
+        }
+        else
+        {
+            sliding = false;
+        }
+    }
+
+    public void CalculateCharacterForward()
+    {
+        if (!grounded)
+        {
+            characterForward = transform.forward;
+            return;
+        }
+
+        characterForward = Vector3.Cross(transform.right, groundHitInfo.normal);
+
+    }
+
     IEnumerator jumpCooldownTimer(float time)
     {
         yield return new WaitForSeconds(time);
@@ -737,6 +802,18 @@ public class MyCharacterController : MonoBehaviour
         _collider.radius = newDimensions.x;
         _collider.height = newDimensions.y;
         Debug.Log("Capsule Dimensions Set!");
+    }
+
+    #endregion
+
+
+    #region - Debug - 
+
+    void DrawDebugLines()
+    {
+
+        Debug.DrawLine(transform.position + Vector3.up * 0.25F, this.transform.position + Vector3.up * 0.25F + Vector3.down * 0.5f, Color.red, 2f);
+        Debug.DrawLine(this.transform.position + Vector3.up * 1, transform.position + Vector3.up * 1 + characterForward * 0.5f * 2, Color.blue);
     }
 
     #endregion
